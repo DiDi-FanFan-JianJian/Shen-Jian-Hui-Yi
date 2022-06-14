@@ -22,5 +22,5 @@ app.get('/personal', (req, res) => {
 });
 
 app.listen(3001, () => {
-    console.log('server running at http://43.142.102.170:3001');
+    console.log('server running at http://localhost:3001');
 })
