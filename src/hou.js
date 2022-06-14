@@ -154,5 +154,5 @@ app.post('/changePassword', (req, res) => {
 });
 
 app.listen(3000, () => {
-    console.log('server running at http://43.142.102.170:3000');
+    console.log('server running at http://localhost:3000');
 })
