@@ -13,6 +13,10 @@
   <script src="jquery.js"></script>
 
   <script>
+    $(function () {
+      console.log("登录界面");
+    })
+
     function check() {
       var username = $("#username").val().trim();
       var password = $("#password").val();
@@ -25,7 +29,7 @@
       }
       else {
         $.ajax({
-          url: "http://localhost:3000/Login",
+          url: "http://localhost:3000/getLogin",
           type: "post",
           contentType: 'application/json',
           data: JSON.stringify({
@@ -40,26 +44,23 @@
             }
             else if (data.role == 'teacher') {
               // 老师来了
-              localStorage.setItem("username", username);
-              localStorage.setItem("role", "teacher");
-              localStorage.setItem("islogin", 1);
-              $(location).attr("href", "index");
+              localStorage.setItem('username', username);
+              localStorage.setItem('role', 'teacher');
               console.log("跳转到server端, 老师正确登录");
+              $(location).attr("href", "index");
             }
             else {
               // 学生来了
               if (data.firstLogin == true) {
-                localStorage.setItem("username", username);
-                localStorage.setItem("role", "student");
-                localStorage.setItem("islogin", 1);
-                $(location).attr("href", "personal");
+                localStorage.setItem('username', username);
+                localStorage.setItem('role', 'student');
                 console.log("跳转到密码修改界面");
+                $(location).attr("href", "password");
               } else {
-                localStorage.setItem("username", username);
-                localStorage.setItem("role", "student");
-                localStorage.setItem("islogin", 1);
-                $(location).attr("href", "index");
+                localStorage.setItem('username', username);
+                localStorage.setItem('role', 'student');
                 console.log("跳转到client端, 学生正确登录");
+                $(location).attr("href", "index");
               }
             }
           }
