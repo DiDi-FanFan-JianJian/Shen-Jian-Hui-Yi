@@ -25,4 +25,19 @@ router.get('/personal', (req, res) => {
   res.sendFile(path.join(__dirname, views, 'personal.html'));
 });
 
+router.get('/teacher', (req, res) => {
+  res.setHeader('Content-Type', 'text/html;charset=gbk');
+  res.sendFile(path.join(__dirname, views, 'teacher.html'));
+});
+
+router.get('/client', (req, res) => {
+  res.setHeader('Content-Type', 'text/html;charset=gbk');
+  res.sendFile(path.join(__dirname, views, 'web_client.html'));
+});
+
+router.get('/server', (req, res) => {
+  res.setHeader('Content-Type', 'text/html;charset=gbk');
+  res.sendFile(path.join(__dirname, views, 'web_server.html'));
+});
+
 module.exports = router;

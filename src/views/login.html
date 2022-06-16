@@ -10,7 +10,7 @@
       font-family: Tahoma, Verdana, Arial, sans-serif;
     }
   </style>
-  <script src="jquery.js"></script>
+  <script src="libs/jquery.js"></script>
 
   <script>
     function check() {
@@ -25,7 +25,7 @@
       }
       else {
         $.ajax({
-          url: "http://localhost:3000/Login",
+          url: "http://localhost:3000/getLogin",
           type: "post",
           contentType: 'application/json',
           data: JSON.stringify({
