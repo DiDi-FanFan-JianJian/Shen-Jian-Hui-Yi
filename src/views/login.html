@@ -10,14 +10,12 @@
       font-family: Tahoma, Verdana, Arial, sans-serif;
     }
   </style>
-  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <script src="jquery.js"></script>
 
   <script>
     function check() {
       var username = $("#username").val().trim();
       var password = $("#password").val();
-      console.log(username);
-      console.log(password);
 
       if (username.length == 0) {
         alert("请输入用户名");
@@ -27,7 +25,7 @@
       }
       else {
         $.ajax({
-          url: "http://localhost:3000/getLogin",
+          url: "http://localhost:3000/Login",
           type: "post",
           contentType: 'application/json',
           data: JSON.stringify({

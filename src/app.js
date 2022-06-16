@@ -1,8 +1,11 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const session = require('express-session')
 const app = express()
 app.use(bodyParser.json())
 
+/******** 静态文件 ********/
+app.use(express.static(__dirname + '/libs'))
 
 /******** 响应头 ********/
 app.all('*', function (req, res, next) {
@@ -15,6 +18,18 @@ app.all('*', function (req, res, next) {
     next();
   }
 });
+
+
+/******** session ********/
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7天
+    secure: false,
+  }
+}));
 
 
 /******** 页面请求 ********/
