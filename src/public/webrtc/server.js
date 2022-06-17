@@ -1,9 +1,21 @@
 const ws = new WebSocket('ws://localhost:3000');
 const remoteVideo = document.getElementById('remoteVideo');
 const remoteScreen = document.getElementById('remoteScreen');
-
+const stu_no = getQueryVariable('stu_no');
+console.log('stu_no: ', stu_no);
 let pc = [];
 /////////////////
+
+function getQueryVariable(variable)
+{
+  var query = window.location.search.substring(1);
+  var vars = query.split("&");
+  for (var i=0;i<vars.length;i++) {
+    var pair = vars[i].split("=");
+    if(pair[0] == variable){return pair[1];}
+  }
+  return(false);
+}
 
 function addNewUser(uid) {
   console.log('addNewUser: ', uid);
@@ -49,6 +61,12 @@ function handleRemoteClose(msg) {
   if (pc[msg.uid] != null) {
     pc[msg.uid].close();
     pc[msg.uid] = null;
+    if (msg.uid[0] === 's') {
+      remoteScreen.srcObject = null;
+    }
+    else {
+      remoteVideo.srcObject = null;
+    }
   }
 }
 
@@ -106,12 +124,8 @@ RTCPeerConnectionWrapper.prototype.handleIceCandidate = function(event) {
 
 RTCPeerConnectionWrapper.prototype.hanndleRemoteAdded = function(event) {
   console.log('onaddstream: ', this.uid);
-  this.video = document.createElement('video');
-  this.video.autoplay = false;
-  this.video.controls = true;
-  // this.video.muted = true;
+  this.video = this.uid[0] === 's' ? remoteScreen : remoteVideo;
   this.video.srcObject = event.streams[0];
-  document.body.appendChild(this.video);
 }
 
 
@@ -163,8 +177,22 @@ function doAnswer(uid) {
   pc[uid].createAnswer().then(createAnswerAndSendMessage, handleCreateOfferError);
 }
 
+function make_call() {
+  let msg = {
+    type: 'start_video',
+    uid: stu_no
+  };
+  ws.send(JSON.stringify(msg));
+  console.log('open: ', stu_no);
+}
+
 ws.onmessage = function(msg) {
   msg = JSON.parse(msg.data);
+  console.log('onmessage: ', msg.type, msg);
+
+  if (!msg.uid || msg.uid.slice(-7) !== stu_no)
+    return;
+
   if (msg.type === 'offer') {
     handleRemoteOffer(msg);
   }
@@ -180,4 +208,22 @@ ws.onmessage = function(msg) {
   else if (msg.type === 'close') {
     handleRemoteClose(msg);
   }
+  else if (msg.type === 'client_ready' && msg.uid.slice(-7) === stu_no) {
+    make_call();
+  }
+}
+
+// 建立连接
+ws.onopen = function() {
+  make_call();
+}
+
+// 页面关闭
+window.onbeforeunload = function() {
+  let msg = {
+    type: 'close',
+    uid: stu_no,
+    target: stu_no
+  };
+  ws.send(JSON.stringify(msg));
 }
