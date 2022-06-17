@@ -1,6 +1,6 @@
 const ws = new WebSocket('ws://localhost:3000');
-const localVideo = document.getElementById('localVideo');
-const localScreen = document.getElementById('localScreen');
+const localVideo = document.getElementById('localvideo');
+const localScreen = document.getElementById('screenvideo');
 
 let videoStream = null, screenStream = null;
 let pc = [];
@@ -10,35 +10,8 @@ let options = {
   videoBitrate: 2500000,
 };
 
-function openVideo() {
-  navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: false
-  })
-  .then(function(stream) {
-    localVideo.srcObject = stream;
-    videoStream = stream;
-  })
-  .catch(function(err) {
-    console.log('getUserMedia() error: ', err);
-  });
-}
-
-function openScreen() {
-  navigator.mediaDevices.getDisplayMedia({
-    video: true,
-    audio: false
-  })
-  .then(function(stream) {
-    localScreen.srcObject = stream;
-    screenStream = stream;
-  })
-  .catch(function(err) {
-    console.log('getUserMedia() error: ', err);
-  });
-}
-
 ////////////////
+
 function RTCPeerConnectionWrapper(uid, stream) {
   this.uid = uid;
   this.pc = this.create(stream);
@@ -214,17 +187,7 @@ function handleRemoteAnswer(msg) {
   pc[myuid].setRemoteDescription(sdp);
 }
 
-function prepareDone() {
-  ws.send(JSON.stringify({
-    type: 'client_ready',
-    uid: myuid
-  }));
-}
-
 ////////////////
-openVideo();
-// openScreen();
-
 function doCall1() {
   if (pc[myuid] == null) {
     pc[myuid] = new RTCPeerConnectionWrapper(-1, videoStream);
@@ -255,12 +218,95 @@ function close() {
   }
 }
 
+function openVideo() {
+  let needAudio = $('input[name="need_audio1"]:radio:checked').val() === '1';
+  navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: needAudio
+  })
+  .then(function(stream) {
+    localVideo.srcObject = stream;
+    videoStream = stream;
+    check_ready();
+  })
+  .catch(function(err) {
+    console.log('getUserMedia() error: ', err);
+  });
+}
+
+function openScreen() {
+  let needAudio = $('input[name="need_audio2"]:radio:checked').val() === '1';
+  navigator.mediaDevices.getDisplayMedia({
+    video: true,
+    audio: needAudio
+  })
+  .then(function(stream) {
+    localScreen.srcObject = stream;
+    screenStream = stream;
+    check_ready();
+  })
+  .catch(function(err) {
+    console.log('getUserMedia() error: ', err);
+  });
+}
+
+function endVideo() {
+  if (videoStream != null) {
+    videoStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+    videoStream = null;
+  }
+  localVideo.srcObject = null;
+  check_ready();
+}
+
+function endScreen() {
+  if (screenStream != null) {
+    screenStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+    screenStream = null;
+  }
+  localScreen.srcObject = null;
+  check_ready();
+}
+
+/////////////////////////////////////
+
+function check_ready() {
+  console.log(videoStream);
+  if (videoStream) {
+    ws.send(JSON.stringify({
+      type: 'client_ready',
+      uid: 'v' + myuid
+    }));
+  }
+  else {
+    ws.send(JSON.stringify({
+      type: 'client_disconnect',
+      uid: 'v' + myuid
+    }));
+  }
+  if (screenStream) {
+    ws.send(JSON.stringify({
+      type: 'client_ready',
+      uid: 's' + myuid
+    }));
+  }
+  else {
+    ws.send(JSON.stringify({
+      type: 'client_disconnect',
+      uid: 's' + myuid
+    }));
+  }
+}
+
 ws.onmessage = function(msg) {
   msg = JSON.parse(msg.data);
   console.log('onmessage: ', msg.type);
   if (msg.type === 'server_ready') {
-    console.log('??????????')
-    prepareDone();
+    check_ready();
   }
   if (msg.target !== myuid)
     return;
@@ -275,19 +321,18 @@ ws.onmessage = function(msg) {
   }
 }
 
-document.getElementById('call1').addEventListener('click', doCall1);
-document.getElementById('call2').addEventListener('click', doCall2);
-document.getElementById('save').addEventListener('click', save);
+document.getElementById('start1').addEventListener('click', openVideo);
+document.getElementById('start2').addEventListener('click', openScreen);
+document.getElementById('end1').addEventListener('click', endVideo);
+document.getElementById('end2').addEventListener('click', endScreen);
 
 // 监听页面关闭
 window.onbeforeunload = function() {
-  // save();
+  endVideo();
+  endScreen();
 }
 
-// 页面打开后的行为
+// ws连接成功
 ws.onopen = function() {
-  ws.send(JSON.stringify({
-    type: 'client_ready',
-    uid: myuid
-  }));
+  check_ready();
 }

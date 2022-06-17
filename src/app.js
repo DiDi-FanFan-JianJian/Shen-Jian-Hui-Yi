@@ -3,8 +3,6 @@ const bodyParser = require('body-parser')
 const session = require('express-session')
 const app = express()
 const wsInstance = require('express-ws')(app);
-const WebServer = require('./webrtc_server');
-
 
 /******** bodyParser ********/
 app.use(bodyParser.json())
