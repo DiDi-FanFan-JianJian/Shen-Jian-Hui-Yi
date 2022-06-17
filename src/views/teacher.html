@@ -39,6 +39,10 @@
         $.ajax({
           url: "http://43.142.102.170:3000/getLogout",
           type: "get",
+          xhrFields: {
+            withCredentials: true
+          },
+          crossDomain: true
         })
       })
 
@@ -46,6 +50,10 @@
         url: "http://43.142.102.170:3000/getAllStu",
         type: "get",
         contentType: 'application/json',
+        xhrFields: {
+          withCredentials: true
+        },
+        crossDomain: true,
         success: function (data) {
           console.log(data);
           my_table = $('#student')

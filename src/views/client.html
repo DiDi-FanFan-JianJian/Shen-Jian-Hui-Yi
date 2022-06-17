@@ -21,6 +21,10 @@
         data: {
           stu_no: localStorage.getItem('username'),
         },
+        xhrFields: {
+          withCredentials: true
+        },
+        crossDomain: true,
         success: function (data) {
           console.log(data);
           let info = "¿ª¿ÎÄê¼¶:" + data.stu_grade + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
@@ -78,6 +82,10 @@
         $.ajax({
           url: "http://43.142.102.170:3000/getLogout",
           type: "get",
+          xhrFields: {
+            withCredentials: true
+          },
+          crossDomain: true,
         })
       })
     });
