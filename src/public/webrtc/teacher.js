@@ -4,7 +4,7 @@ ws.onmessage = function(msg) {
   msg = JSON.parse(msg.data);
   if (msg.type === 'client_ready') {
     let uid = msg.uid;
-    $('#' + uid).text('ÎÒÊÇÀÏÁù');
+    $('#' + uid).text('disconnected');
   }
 }
 

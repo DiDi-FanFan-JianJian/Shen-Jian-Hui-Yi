@@ -15,7 +15,7 @@
       $('#end1').attr('disabled', true);
       $('#end2').attr('disabled', true);
       $.ajax({
-        url: "http://localhost:3000/getInfo",
+        url: "http://43.142.102.170:3000/getInfo",
         type: "get",
         contentType: 'application/json',
         data: {
@@ -76,7 +76,7 @@
       $("#logout").click(function () {
         localStorage.clear();
         $.ajax({
-          url: "http://localhost:3000/getLogout",
+          url: "http://43.142.102.170:3000/getLogout",
           type: "get",
         })
       })
