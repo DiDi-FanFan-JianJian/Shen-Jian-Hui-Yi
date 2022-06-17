@@ -198,7 +198,6 @@ router.post('/upload', upload.single('file'), (req, res) => {
 
   // 使用multer中间件后，解析formdata数据之后将在req中添加body和file两个对象
   console.log(req.file);
-  console.log(req.body);
   
   // 输出文件信息
   console.log('====================================================');
