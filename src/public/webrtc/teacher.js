@@ -2,15 +2,28 @@ const ws = new WebSocket('ws://localhost:3000');
 
 ws.onmessage = function(msg) {
   msg = JSON.parse(msg.data);
+  console.log(msg);
   if (msg.type === 'client_ready') {
     let uid = msg.uid;
-    $('#' + uid).text('disconnected');
+    console.log($('#' + uid).text());
+    $('#' + uid).text('connect');
+    $('#' + uid).css('color', 'blue');
+  }
+  else if (msg.type === 'client_disconnect') {
+    let uid = msg.uid;
+    console.log($('#' + uid).text());
+    $('#' + uid).text('disconnect');
+    $('#' + uid).css('color', 'red');
   }
 }
 
 // 页面打开后的行为
-ws.onopen = function() {
-  ws.send(JSON.stringify({
-    type: 'server_ready',
-  }));
+
+window.onload = function() {
+  // 一秒后执行
+  setTimeout(function() {
+    ws.send(JSON.stringify({
+      type: 'server_ready',
+    }));
+  }, 1000);
 }

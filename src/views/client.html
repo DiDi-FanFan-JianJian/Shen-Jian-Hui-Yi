@@ -8,6 +8,13 @@
   <title>Ö÷Ò³</title>
   <script type="text/javascript" src="libs/jquery.js"></script>
 
+  <style type="text/css">
+    video {
+      width: 640px;
+      height: 360px;
+    }
+  </style>
+
   <script>
     $(function () {
       // äÖÈ¾Ò³Ãæ
@@ -111,12 +118,12 @@
         <td colspan="6" id="info"></td>
       </tr>
 
-      <tr>
+      <tr style="height:400px">
         <td colspan="3">
-          <video src="" id="video1"></video>
+          <video id="localvideo" controls autoplay></video>
         </td>
         <td colspan="3">
-          <video src="" id="video2"></video>
+          <video id="screenvideo" controls autoplay></video>
         </td>
       </tr>
 
@@ -158,6 +165,7 @@
       </tr>
     </table>
   </div>
+  <script src="webrtc/client.js"></script>
 </body>
 
 </html>

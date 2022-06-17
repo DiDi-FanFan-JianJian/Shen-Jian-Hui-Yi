@@ -1,6 +1,7 @@
 const ws = new WebSocket('ws://localhost:3000');
+const remoteVideo = document.getElementById('remoteVideo');
+const remoteScreen = document.getElementById('remoteScreen');
 
-let localStream = null;
 let pc = [];
 /////////////////
 

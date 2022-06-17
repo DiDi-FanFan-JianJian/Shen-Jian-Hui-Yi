@@ -7,11 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>主页</title>
   <script type="text/javascript" src="libs/jquery.js"></script>
+  <style type="text/css">
+    video {
+      width: 640px;
+      height: 360px;
+    }
+  </style>
 
   <script>
     $(function () {
       // 渲染页面
-      console.log("某个学生页面");
       const urlParams = new URLSearchParams(window.location.search);
       const stu = (urlParams.get('stu_no') != null) ? urlParams.get('stu_no') : '1234567';
       $.ajax({
@@ -52,7 +57,6 @@
           $('#info2').text(info);
         }
       });
-
       $("#logout").click(function () {
         localStorage.clear();
         $.ajax({
@@ -95,16 +99,16 @@
         <td>屏幕</td>
       </tr>
 
-      <tr>
+      <tr style="height:400px">
         <td>
-          <video src="" id="video1"></video>
+          <video id="remoteVideo" controls autoplay></video>
         </td>
         <td>
-          <video src="" id="video2"></video>
+          <video id="remoteScreen" controls autoplay></video>
         </td>
       </tr>
     </table>
   </div>
+  <script src="webrtc/server.js"></script>
 </body>
-
 </html>
