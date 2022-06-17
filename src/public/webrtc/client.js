@@ -3,11 +3,12 @@ const localVideo = document.getElementById('localvideo');
 const localScreen = document.getElementById('screenvideo');
 
 let videoStream = null, screenStream = null;
-let videoRecoder = null, screenRecoder = null;
+let videoRecorder = null, screenRecorder = null;
 let videoChunks = [], screenChunks = [];
 let pc = [];
 let idx = 0;
 let myuid = localStorage.getItem('username');
+let uname = 'zhangsan';
 let options = {
   audioBitrate: 128000,
   videoBitrate: 2500000,
@@ -193,6 +194,84 @@ function makeCall() {
   }
 }
 
+function saveScreen() {
+  if (screenChunks.length == 0) 
+    return;
+  let blob = new Blob(screenChunks, {type: 'video/webm'});
+  let formData = new FormData();
+  // -年-月-日-时-分-秒
+  let date = new Date();
+  let time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes() + '-' + date.getSeconds();
+  let name = 'u' + myuid + '-' + uname + '-screen-' + time + '.webm';
+  formData.append('file', blob, name);
+  let xhr = new XMLHttpRequest();
+  xhr.open('POST', 'http://localhost:3000/upload');
+  xhr.send(formData);
+  screenChunks = [];
+}
+
+function saveVideo() {
+  if (videoChunks.length == 0)
+    return;
+  let blob = new Blob(videoChunks, {type: 'video/webm'});
+  let formData = new FormData();
+  // -年-月-日-时-分-秒
+  let date = new Date();
+  let time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes() + '-' + date.getSeconds();
+  let name = 'u' + myuid + '-' + uname + '-video-' + time + '.webm';
+  formData.append('file', blob, name);
+  let xhr = new XMLHttpRequest();
+  xhr.open('POST', 'http://localhost:3000/upload');
+  xhr.send(formData);
+  videoChunks = [];
+}
+
+function initScreenRecorder(stream = screenStream) {
+  console.log('initScreenRecorder');
+  screenRecorder = new MediaRecorder(stream, options);
+  screenChunks = [];
+  screenRecorder.ondataavailable = function(e) {
+    console.log('recording screen');
+    screenChunks.push(e.data);
+    saveScreen();
+  }
+  screenRecorder.onstop = function(e) {
+    console.log('stop recording screen');
+    saveScreen();
+  }
+  screenRecorder.start();
+  // 5秒后停止
+  setTimeout(function() {
+    if (screenRecorder.state != "inactive") {
+      screenRecorder.stop();
+      initScreenRecorder();
+    }
+  }, 5000);
+}
+
+function initVideoRecorder(stream = videoStream) {
+  console.log('initVideoRecorder');
+  videoRecorder = new MediaRecorder(stream, options);
+  videoChunks = [];
+  videoRecorder.ondataavailable = function(e) {
+    console.log('recording video');
+    videoChunks.push(e.data);
+    saveVideo();
+  }
+  videoRecorder.onstop = function(e) {
+    console.log('stop recording video');
+    saveVideo();
+  }
+  videoRecorder.start();
+  // 5秒后停止
+  setTimeout(function() {
+    if (videoRecorder.state != "inactive") {
+      videoRecorder.stop();
+      initVideoRecorder();
+    }
+  }, 5000);
+}
+
 function openVideo() {
   let needAudio = $('input[name="need_audio1"]:radio:checked').val() === '1';
   navigator.mediaDevices.getUserMedia({
@@ -203,18 +282,7 @@ function openVideo() {
     localVideo.srcObject = stream;
     videoStream = stream;
     check_ready();
-    videoRecoder = new MediaRecorder(stream, options);
-    
-    videoRecoder.ondataavailable = function(e) {
-      console.log('recording video');
-      videoChunks.push(e.data);
-    }
-
-    videoRecoder.onstop = function(e) {
-      console.log('stop recording screen');
-    }
-
-    videoRecoder.start(5000);
+    initVideoRecorder();
   })
   .catch(function(err) {
     console.log('getUserMedia() error: ', err);
@@ -231,19 +299,7 @@ function openScreen() {
     localScreen.srcObject = stream;
     screenStream = stream;
     check_ready();
-
-    screenRecoder = new MediaRecorder(stream, options);
-
-    screenRecoder.ondataavailable = function(e) {
-      console.log('recording screen');
-      screenChunks.push(e.data);
-    }
-
-    screenRecoder.onstop = function(e) {
-      console.log('stop recording screen');
-    }
-
-    screenRecoder.start(5000);
+    initScreenRecorder();
   })
   .catch(function(err) {
     console.log('getUserMedia() error: ', err);
@@ -264,7 +320,7 @@ function endVideo() {
       delete pc[idx];
     }
   }
-  videoRecoder.stop();
+  videoRecorder.stop();
 
   if (videoStream != null) {
     videoStream.getTracks().forEach(function(track) {
@@ -290,7 +346,7 @@ function endScreen() {
       delete pc[idx];
     }
   }
-  screenRecoder.stop();
+  screenRecorder.stop();
 
   if (screenStream != null) {
     screenStream.getTracks().forEach(function(track) {
