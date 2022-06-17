@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="gbk">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主页</title>
+  <script type="text/javascript" src="libs/jquery.js"></script>
+
+  <script>
+    $(function () {
+      // 渲染页面
+      console.log("学生主页面");
+      $('#end1').attr('disabled', true);
+      $('#end2').attr('disabled', true);
+      $.ajax({
+        url: "http://localhost:3000/getInfo",
+        type: "get",
+        contentType: 'application/json',
+        data: {
+          stu_no: localStorage.getItem('username'),
+        },
+        success: function (data) {
+          console.log(data);
+          let info = "开课年级:" + data.stu_grade + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '学号:' + localStorage.getItem('username') + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '姓名:' + data.stu_name + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '性别:' + data.stu_sex + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '班级:' + data.stu_class_fname + '/' + data.stu_class_sname;
+          $('#info').text(info);
+        }
+      })
+
+      // 绑定事件
+      $('#start1').click(function start1() {
+        $('#end1').attr('disabled', false);
+
+        let audio1 = $('input[name=need_audio1]:checked').val();
+        console.log(audio1);
+
+        $('#start1').attr("disabled", true);
+        $('input[name=need_audio1]').attr('disabled', true);
+      });
+
+      $('#start2').click(function start2() {
+        $('#end2').attr('disabled', false);
+
+        let audio2 = $('input[name=need_audio2]:checked').val();
+        console.log(audio2);
+
+        $('#start2').attr("disabled", true);
+        $('input[name=need_audio2]').attr('disabled', true);
+      });
+
+      $('#end1').click(function end1() {
+        $('#start1').attr('disabled', false);
+        $('input[name=need_audio1]').attr('disabled', false);
+
+        let audio1 = $('input[name=need_audio1]:checked').val();
+        console.log(audio1);
+
+        $('#end1').attr("disabled", true);
+      });
+
+      $('#end2').click(function end2() {
+        $('#start2').attr('disabled', false);
+        $('input[name=need_audio2]').attr('disabled', false);
+
+        let audio2 = $('input[name=need_audio2]:checked').val();
+        console.log(audio2);
+
+        $('#end2').attr("disabled", true);
+      });
+
+      $("#logout").click(function () {
+        localStorage.clear();
+        $.ajax({
+          url: "http://localhost:3000/getLogout",
+          type: "get",
+        })
+      })
+    });
+
+  </script>
+</head>
+
+<body>
+  <div id="left" style="width:15%; height:500px; float:left;">
+    <table align="left" width="85%" border="0" cellpadding="0" cellspacing="0">
+      <left>
+        <ul id="leftmenu"><br><br>考试系统<li><a href="index">主页</a></li>
+          <li><a href="password">修改密码</a></li>
+          <li id="logout"><a href="login">退出</a></li>
+        </ul>
+      </left>
+    </table>
+  </div>
+  <div id="main">
+    <h1 style="margin-left: 46%">视频监考</h1>
+    <table border="1" width="70%" style="text-align:center">
+      <tr>
+        <td colspan="6" id="info"></td>
+      </tr>
+
+      <tr>
+        <td colspan="3">
+          <video src="" id="video1"></video>
+        </td>
+        <td colspan="3">
+          <video src="" id="video2"></video>
+        </td>
+      </tr>
+
+      <tr>
+        <td rowspan="2">
+          <button id="start1">开始录制</button>
+        </td>
+        <td>
+          是否需要录制音频？
+        </td>
+        <td rowspan="2">
+          <button id="end1">结束录制</button>
+        </td>
+
+        <td rowspan="2">
+          <button id="start2">开始录制</button>
+        </td>
+        <td>
+          是否需要录制音频？
+        </td>
+        <td rowspan="2">
+          <button id="end2">结束录制</button>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <label for="need_audio1_yes">需要</label>
+          <input id="need_audio1_yes" type="radio" value="1" name="need_audio1" checked>
+          <label for="need_audio1_no">不需要</label>
+          <input id="need_audio1_no" type="radio" value="0" name="need_audio1">
+        </td>
+        <td>
+          <label for="need_audio2_yes">需要</label>
+          <input id="need_audio2_yes" type="radio" value="1" name="need_audio2" checked>
+          <label for="need_audio2_no">不需要</label>
+          <input id="need_audio2_no" type="radio" value="0" name="need_audio2">
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+
+</html>

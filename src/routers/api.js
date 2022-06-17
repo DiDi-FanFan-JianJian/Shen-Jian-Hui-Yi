@@ -15,7 +15,7 @@ router.get('/getAllStu', (req, res) => {
     database: 'user'
   });
   connection.connect();
-  var sql = "select stu_no, stu_name from student where stu_userlevel=0";
+  var sql = "select stu_no, stu_name from student where stu_userlevel=0 and stu_enable=1";
   connection.query(sql, function (error, results) {
     if (error) throw console.error;
     res.json(results)
@@ -23,12 +23,13 @@ router.get('/getAllStu', (req, res) => {
   connection.end();
 });
 
-// 获取当前学号对应的用户身份（teacher or student）
-router.get('/getRole', (req, res) => {
-  console.log("getRole");
+// 获取当前学号对应的信息（teacher or student）
+router.get('/getInfo', (req, res) => {
+  console.log("getInfo");
   console.log(req.session);
 
   var stu_no = req.query.stu_no;
+  console.log(stu_no);
   var connection = mysql.createConnection({
     host: '43.142.102.170',
     user: 'root',
@@ -36,19 +37,13 @@ router.get('/getRole', (req, res) => {
     database: 'user'
   });
   connection.connect();
-  var sql = "select stu_userlevel from student where stu_no=?";
+  var sql = "select stu_grade, stu_name, stu_sex, stu_class_fname, stu_class_sname from student where stu_no=?";
   connection.query(sql, [stu_no], function (error, results) {
     if (error) throw console.error;
-    let userlevel = results[0].stu_userlevel;
-    if (userlevel == '1') {
-      res.json({ role: "teacher" });
-    }
-    else {
-      res.json({ role: "student" });
-    }
+    res.json(results[0]);
   })
 
-  connection.end();
+connection.end();
 });
 
 // 登录的post请求，判断用户名是否存在，用户名密码是否匹配，是否被封禁，是否首次登录
@@ -98,11 +93,20 @@ router.post('/getLogin', (req, res) => {
     }
     else {
       if (results[0].stu_userlevel == 1) {
-        req.session.username = req.body.stu_no;
-        req.session.role = "teacher";
-        req.session.isLogin = 1;
-        req.session.firstLogin = 0;
-        res.json({ msg: "success", canLogin: true, role: 'teacher', firstLogin: false })
+        if (results[0].stu_password == md5(stu_no)) {
+          req.session.username = req.body.stu_no;
+          req.session.role = "teacher";
+          req.session.isLogin = 1;
+          req.session.firstLogin = 1;
+          res.json({ msg: "success", canLogin: true, role: 'teacher', firstLogin: true })
+        }
+        else {
+          req.session.username = req.body.stu_no;
+          req.session.role = "teacher";
+          req.session.isLogin = 1;
+          req.session.firstLogin = 0;
+          res.json({ msg: "success", canLogin: true, role: 'teacher', firstLogin: false })
+        }
       }
       else {
         if (results[0].stu_password == md5(stu_no)) {
@@ -134,14 +138,14 @@ router.get('/getLogout', function (req, res) {
   req.session.role = null;
   req.session.isLogin = 0;
   req.session.firstLogin = 0;
-  res.redirect('login');
+  res.redirect('/login');
 });
 
 // 修改密码, 如果是第一次修改则同时修改session
 router.post('/changePassword', (req, res) => {
   console.log("changePassword");
   console.log(req.session);
-  
+
   const stu_no = req.body.stu_no;
   const oldpassword = md5(req.body.oldpassword);
   const newpassword = md5(req.body.newpassword);

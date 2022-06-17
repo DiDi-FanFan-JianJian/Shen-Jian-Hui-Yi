@@ -6,13 +6,15 @@ let router = express.Router();
 const views = '../views/';
 
 router.get('/', (req, res) => {
-  res.setHeader('Content-Type', 'text/html;charset=gbk');
-  res.sendFile(path.join(__dirname, views, 'login.html'));
+  res.redirect('/login');
 });
 
 router.get('/login', (req, res) => {
   console.log('login');
-  console.log(req.session);
+  req.session.username = null;
+  req.session.role = null;
+  req.session.isLogin = 0;
+  req.session.firstLogin = 0;
 
   res.setHeader('Content-Type', 'text/html;charset=gbk');
   res.sendFile(path.join(__dirname, views, 'login.html'));
@@ -27,8 +29,14 @@ router.get('/index', (req, res) => {
       res.redirect('/password');
     }
     else {
-      res.setHeader('Content-Type', 'text/html;charset=gbk');
-      res.sendFile(path.join(__dirname, views, 'index.html'));
+      if (req.session.role == 'student') {
+        res.setHeader('Content-Type', 'text/html;charset=gbk');
+        res.sendFile(path.join(__dirname, views, 'client.html'));  
+      }
+      else if (req.session.role == 'teacher') {
+        res.setHeader('Content-Type', 'text/html;charset=gbk');
+        res.sendFile(path.join(__dirname, views, 'teacher.html'));              
+      }
     }
   }
   else {
@@ -53,7 +61,17 @@ router.get('/password', (req, res) => {
   else {
     res.redirect('/login');
   }
-})
+});
+
+router.get('/invigilation', (req, res) => {
+  if (req.session.role == 'teacher') {
+    res.setHeader('Content-Type', 'text/html;charset=gbk');
+    res.sendFile(path.join(__dirname, views, 'server.html'));  
+  }
+  else {
+    res.redirect('/login');
+  }
+});
 
 router.get('/teacher', (req, res) => {
   res.setHeader('Content-Type', 'text/html;charset=gbk');
@@ -69,5 +87,11 @@ router.get('/server', (req, res) => {
   res.setHeader('Content-Type', 'text/html;charset=gbk');
   res.sendFile(path.join(__dirname, views, 'web_server.html'));
 });
+
+// router.get('*', (req, res) => {
+//   console.log("wrong path");
+//   console.log(req);
+//   res.redirect('/login');
+// });
 
 module.exports = router;

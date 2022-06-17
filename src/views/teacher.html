@@ -11,7 +11,7 @@
       width: 60%;
       margin-left: 20%;
       height: 100%;
-      text-align:center
+      text-align: center
     }
 
     th {
@@ -25,31 +25,71 @@
     table {
       margin: auto;
     }
-    
   </style>
 
   <script src="libs/jquery.js"></script>
   <script>
+    $(function () {
+      console.log("老师主页面");
+
+      $("#username").text(localStorage.getItem('username'));
+      $("#role").text(localStorage.getItem('role'));
+      $("#logout").click(function () {
+        localStorage.clear();
+        $.ajax({
+          url: "http://localhost:3000/getLogout",
+          type: "get",
+        })
+      })
+
+      $.ajax({
+        url: "http://localhost:3000/getAllStu",
+        type: "get",
+        contentType: 'application/json',
+        success: function (data) {
+          console.log(data);
+          my_table = $('#student')
+          for (let i = 0; i < data.length; ++i) {
+            let my_tr = $("<tr></tr>");
+            let my_td1 = $("<td>" + data[i].stu_no + "</td>");
+            let my_td2 = $("<td>" + data[i].stu_name + "</td>");
+            let my_td3 = $("<td id='" + data[i].stu_no + "'>未连接</td>");
+            let my_td4 = $("<td><a href='invigilation?stu_no=" + data[i].stu_no + "'>查看详情</a></td>")
+            my_td1.appendTo(my_tr);
+            my_td2.appendTo(my_tr);
+            my_td3.appendTo(my_tr);
+            my_td4.appendTo(my_tr);
+            my_tr.appendTo(my_table);
+          }
+        }
+      })
+    })
   </script>
 </head>
-
+<a href=""></a>
 <body>
-  <div class ="main">
+  <div id="left" style="width:15%; height:500px; float:left;">
+    <table align="left" width="85%" border="0" cellpadding="0" cellspacing="0">
+      <left>
+        <ul id="leftmenu"><br><br>考试系统<li><a href="index">主页</a></li>
+          <li><a href="password">修改密码</a></li>
+          <li id="logout"><a href="login">退出</a></li>
+        </ul>
+      </left>
+    </table>
+  </div>
+  <div class="main">
     <h1>学生列表</h1>
-    <table border="1">
+    <table border="1" id="student">
       <tr>
         <th>学号</th>
         <th>姓名</th>
         <th>连接状态</th>
-      </tr>
-      <tr>
-        <td>1952120</td>
-        <td>张迪</td>
-        <td id="1952120">已连接</td>
+        <th>学生监考</th>
       </tr>
     </table>
   </div>
-  <script src="webrtc/teacher.js"></script> 
+  <script src="webrtc/teacher.js" charset="GBK"></script>
 </body>
 
 </html>

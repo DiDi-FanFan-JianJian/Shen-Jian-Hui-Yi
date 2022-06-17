@@ -52,14 +52,14 @@ app.use('/', api_router);
 /******** websocket ********/
 app.ws('/', ws => {
   ws.on('message', data => {
-      // 未做业务处理，收到消息后直接广播
-      wsInstance.getWss().clients.forEach(server => {
-          if (server !== ws) {
-              server.send(data);
-          }
-      });
+    // 未做业务处理，收到消息后直接广播
+    wsInstance.getWss().clients.forEach(server => {
+      if (server !== ws) {
+        server.send(data);
+      }
+    });
   });
-  let webServer = new WebServer(ws);
+  // let webServer = new WebServer(ws);
 });
 
 

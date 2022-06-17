@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="gbk">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主页</title>
+  <script type="text/javascript" src="libs/jquery.js"></script>
+
+  <script>
+    $(function () {
+      // 渲染页面
+      console.log("某个学生页面");
+      const urlParams = new URLSearchParams(window.location.search);
+      const stu = (urlParams.get('stu_no') != null) ? urlParams.get('stu_no') : '1234567';
+      $.ajax({
+        url: "http://localhost:3000/getInfo",
+        type: "get",
+        contentType: 'application/json',
+        data: {
+          stu_no: stu,
+        },
+        success: function (data) {
+          console.log(data);
+          let info = "开课年级:" + data.stu_grade + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '学号:' + stu + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '姓名:' + data.stu_name + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '性别:' + data.stu_sex + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '班级:' + data.stu_class_fname + '/' + data.stu_class_sname;
+          $('#info1').text(info);
+        }
+      });
+      $.ajax({
+        url: "http://localhost:3000/getInfo",
+        type: "get",
+        contentType: 'application/json',
+        data: {
+          stu_no: localStorage.getItem('username'),
+        },
+        success: function (data) {
+          console.log(data);
+          let info = '监考人:' + data.stu_name + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          $('#info2').text(info);
+        }
+      });
+
+      $("#logout").click(function () {
+        localStorage.clear();
+        $.ajax({
+          url: "http://localhost:3000/getLogout",
+          type: "get",
+        })
+      })
+    });
+
+  </script>
+</head>
+
+<body>
+  <div id="left" style="width:15%; height:500px; float:left;">
+    <table align="left" width="85%" border="0" cellpadding="0" cellspacing="0">
+      <left>
+        <ul id="leftmenu"><br><br>考试系统<li><a href="index">主页</a></li>
+          <li><a href="password">修改密码</a></li>
+          <li id="logout"><a href="login">退出</a></li>
+        </ul>
+      </left>
+    </table>
+  </div>
+  <div id="main">
+    <h1 style="margin-left: 46%">视频监考</h1>
+    <table border="1" width="70%" style="text-align:center">
+      <tr>
+        <td colspan="2" id="info1"></td>
+      </tr>
+      <tr>
+        <td colspan="2" id="info2"></td>
+      </tr>
+
+      <tr>
+        <td>摄像头</td>
+        <td>屏幕</td>
+      </tr>
+
+      <tr>
+        <td>
+          <video src="" id="video1"></video>
+        </td>
+        <td>
+          <video src="" id="video2"></video>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+
+</html>
