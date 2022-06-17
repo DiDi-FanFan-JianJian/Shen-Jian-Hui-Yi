@@ -18,7 +18,6 @@ ws.onmessage = function(msg) {
 }
 
 // 页面打开后的行为
-
 window.onload = function() {
   // 一秒后执行
   setTimeout(function() {
