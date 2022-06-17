@@ -1,7 +1,13 @@
 const express = require('express');
 let router = express.Router();
-const md5 = require('md5-node')
-const mysql = require('mysql')
+const md5 = require('md5-node');
+const mysql = require('mysql');
+
+const multer = require('multer');
+const path = require('path');
+// 设置上传的目录文件夹
+const upload = multer({dest: 'uploads/'});
+const fs = require('fs');
 
 // 用来获取所有的学生信息（学号和姓名）
 router.get('/getAllStu', (req, res) => {
@@ -180,6 +186,42 @@ router.post('/changePassword', (req, res) => {
       res.json({ msg: 'system error' });
     }
   })
+});
+
+// 接受视频接口
+router.post('/upload', upload.single('file'), (req, res) => {
+  // 没有附带文件
+  if (!req.file) {
+    res.json({ok: false});
+    return;
+  }
+
+  // 使用multer中间件后，解析formdata数据之后将在req中添加body和file两个对象
+  console.log(req.file);
+  
+  // 输出文件信息
+  console.log('====================================================');
+  console.log('fieldname: ' + req.file.fieldname);
+  console.log('originalname: ' + req.file.originalname);
+  console.log('mimetype: ' + req.file.mimetype);
+  console.log('size: ' + (req.file.size / 1024).toFixed(2) + 'KB');
+  console.log('destination: ' + req.file.destination);
+  console.log('filename: ' + req.file.filename);
+  console.log('path: ' + req.file.path);
+
+  // 重命名文件
+  let oldPath = path.join(req.file.path);
+  let newPath = path.join('uploads/' + req.file.originalname);
+  console.log(oldPath);
+  console.log(newPath);
+  fs.rename(oldPath, newPath, (err) => {
+    if (err) {
+      res.json({ok: false});
+      console.log(err);
+    } else {
+      res.json({ok: true});
+    }
+  });
 });
 
 module.exports = router;
