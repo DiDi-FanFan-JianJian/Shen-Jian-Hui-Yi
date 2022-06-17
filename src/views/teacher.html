@@ -37,15 +37,23 @@
       $("#logout").click(function () {
         localStorage.clear();
         $.ajax({
-          url: "http://localhost:3000/getLogout",
+          url: "http://43.142.102.170:3000/getLogout",
           type: "get",
+          xhrFields: {
+            withCredentials: true
+          },
+          crossDomain: true
         })
       })
 
       $.ajax({
-        url: "http://localhost:3000/getAllStu",
+        url: "http://43.142.102.170:3000/getAllStu",
         type: "get",
         contentType: 'application/json',
+        xhrFields: {
+          withCredentials: true
+        },
+        crossDomain: true,
         success: function (data) {
           console.log(data);
           my_table = $('#student')
@@ -68,7 +76,7 @@
     })
   </script>
 </head>
-<a href=""></a>
+
 <body>
   <div id="left" style="width:15%; height:500px; float:left;">
     <table align="left" width="85%" border="0" cellpadding="0" cellspacing="0">
@@ -92,7 +100,7 @@
       </tr>
     </table>
   </div>
-  <script src="webrtc/teacher.js" charset="GBK"></script>
+  <script src="webrtc/teacher.js"></script>
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-const ws = new WebSocket('ws://localhost:3000');
+const ws = new WebSocket('ws://43.142.102.170:3000');
 
 ws.onmessage = function(msg) {
   msg = JSON.parse(msg.data);
