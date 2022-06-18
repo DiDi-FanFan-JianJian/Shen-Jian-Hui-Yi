@@ -32,28 +32,18 @@
     $(function () {
       console.log("老师主页面");
 
-      $("#username").text(localStorage.getItem('username'));
-      $("#role").text(localStorage.getItem('role'));
       $("#logout").click(function () {
         localStorage.clear();
         $.ajax({
-          url: "http://43.142.102.170:3000/getLogout",
+          url: "http://localhost:3000/getLogout",
           type: "get",
-          xhrFields: {
-            withCredentials: true
-          },
-          crossDomain: true
         })
       })
 
       $.ajax({
-        url: "http://43.142.102.170:3000/getAllStu",
+        url: "http://localhost:3000/getAllStu",
         type: "get",
         contentType: 'application/json',
-        xhrFields: {
-          withCredentials: true
-        },
-        crossDomain: true,
         success: function (data) {
           console.log(data);
           my_table = $('#student')
@@ -61,8 +51,8 @@
             let my_tr = $("<tr></tr>");
             let my_td1 = $("<td>" + data[i].stu_no + "</td>");
             let my_td2 = $("<td>" + data[i].stu_name + "</td>");
-            let my_td3 = $("<td style='color:red' id='v" + data[i].stu_no + "'>disconnect</td>");
-            let my_td4 = $("<td style='color:red' id='s" + data[i].stu_no + "'>disconnect</td>");
+            let my_td3 = $("<td style='color:red' id='v" + data[i].stu_no + "'>未连接</td>");
+            let my_td4 = $("<td style='color:red' id='s" + data[i].stu_no + "'>未连接</td>");
             let my_td5 = $("<td><a href='invigilation?stu_no=" + data[i].stu_no + "'>查看详情</a></td>")
             my_td1.appendTo(my_tr);
             my_td2.appendTo(my_tr);
@@ -76,7 +66,7 @@
     })
   </script>
 </head>
-
+<a href=""></a>
 <body>
   <div id="left" style="width:15%; height:500px; float:left;">
     <table align="left" width="85%" border="0" cellpadding="0" cellspacing="0">
@@ -100,7 +90,7 @@
       </tr>
     </table>
   </div>
-  <script src="webrtc/teacher.js"></script>
+  <script src="webrtc/teacher.js" charset="utf-8"></script>
 </body>
 
 </html>

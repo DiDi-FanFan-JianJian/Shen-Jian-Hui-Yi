@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
 
 router.get('/login', (req, res) => {
   console.log('login');
-  req.session.username = null;
+  req.session.stu_no = null;
   req.session.role = null;
   req.session.isLogin = 0;
   req.session.firstLogin = 0;

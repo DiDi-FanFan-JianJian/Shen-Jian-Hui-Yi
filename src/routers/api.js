@@ -3,13 +3,14 @@ let router = express.Router();
 const md5 = require('md5-node');
 const mysql = require('mysql');
 
+const iconv = require('iconv-lite');
 const multer = require('multer');
 const path = require('path');
-// ÉèÖÃÉÏ´«µÄÄ¿Â¼ÎÄ¼þ¼Ð
+// è®¾ç½®ä¸Šä¼ çš„ç›®å½•æ–‡ä»¶å¤¹
 const upload = multer({dest: 'uploads/'});
 const fs = require('fs');
 
-// ÓÃÀ´»ñÈ¡ËùÓÐµÄÑ§ÉúÐÅÏ¢£¨Ñ§ºÅºÍÐÕÃû£©
+// ç”¨æ¥èŽ·å–æ‰€æœ‰çš„å­¦ç”Ÿä¿¡æ¯ï¼ˆå­¦å·å’Œå§“åï¼‰
 router.get('/getAllStu', (req, res) => {
   console.log("getAllStu");
   console.log(req.session);
@@ -29,7 +30,7 @@ router.get('/getAllStu', (req, res) => {
   connection.end();
 });
 
-// »ñÈ¡µ±Ç°Ñ§ºÅ¶ÔÓ¦µÄÐÅÏ¢£¨teacher or student£©
+// èŽ·å–å½“å‰å­¦å·å¯¹åº”çš„ä¿¡æ¯ï¼ˆteacher or studentï¼‰
 router.get('/getInfo', (req, res) => {
   console.log("getInfo");
   console.log(req.session);
@@ -52,7 +53,7 @@ router.get('/getInfo', (req, res) => {
 connection.end();
 });
 
-// µÇÂ¼µÄpostÇëÇó£¬ÅÐ¶ÏÓÃ»§ÃûÊÇ·ñ´æÔÚ£¬ÓÃ»§ÃûÃÜÂëÊÇ·ñÆ¥Åä£¬ÊÇ·ñ±»·â½û£¬ÊÇ·ñÊ×´ÎµÇÂ¼
+// ç™»å½•çš„postè¯·æ±‚ï¼Œåˆ¤æ–­ç”¨æˆ·åæ˜¯å¦å­˜åœ¨ï¼Œç”¨æˆ·åå¯†ç æ˜¯å¦åŒ¹é…ï¼Œæ˜¯å¦è¢«å°ç¦ï¼Œæ˜¯å¦é¦–æ¬¡ç™»å½•
 router.post('/getLogin', (req, res) => {
   console.log("getLogin");
   console.log(req.session);
@@ -70,28 +71,28 @@ router.post('/getLogin', (req, res) => {
   connection.query(sql, [stu_no], function (error, results) {
     if (error) throw console.error;
     if (results.length == 0) {
-      req.session.username = null;
+      req.session.stu_no = null;
       req.session.role = null;
       req.session.isLogin = 0;
       req.session.firstLogin = 0;
       res.json({ msg: "Can't find your account!!!", canLogin: false, role: '?', firstLogin: false });
     }
     else if (results.length > 1) {
-      req.session.username = null;
+      req.session.stu_no = null;
       req.session.role = null;
       req.session.isLogin = 0;
       req.session.firstLogin = 0;
       res.json({ msg: "System Error!!!", canLogin: false, role: '?', firstLogin: false });
     }
     else if (results[0].stu_password != stu_password) {
-      req.session.username = null;
+      req.session.stu_no = null;
       req.session.role = null;
       req.session.isLogin = 0;
       req.session.firstLogin = 0;
       res.json({ msg: "Password error!!!", canLogin: false, role: '?', firstLogin: false });
     }
     else if (results[0].stu_enable != '1') {
-      req.session.username = null;
+      req.session.stu_no = null;
       req.session.role = null;
       req.session.isLogin = 0;
       req.session.firstLogin = 0;
@@ -100,14 +101,14 @@ router.post('/getLogin', (req, res) => {
     else {
       if (results[0].stu_userlevel == 1) {
         if (results[0].stu_password == md5(stu_no)) {
-          req.session.username = req.body.stu_no;
+          req.session.stu_no = req.body.stu_no;
           req.session.role = "teacher";
           req.session.isLogin = 1;
           req.session.firstLogin = 1;
           res.json({ msg: "success", canLogin: true, role: 'teacher', firstLogin: true })
         }
         else {
-          req.session.username = req.body.stu_no;
+          req.session.stu_no = req.body.stu_no;
           req.session.role = "teacher";
           req.session.isLogin = 1;
           req.session.firstLogin = 0;
@@ -116,13 +117,13 @@ router.post('/getLogin', (req, res) => {
       }
       else {
         if (results[0].stu_password == md5(stu_no)) {
-          req.session.username = req.body.stu_no;
+          req.session.stu_no = req.body.stu_no;
           req.session.role = "student";
           req.session.isLogin = 1;
           req.session.firstLogin = 1;
           res.json({ msg: "success", canLogin: true, role: 'student', firstLogin: true });
         } else {
-          req.session.username = req.body.stu_no;
+          req.session.stu_no = req.body.stu_no;
           req.session.role = "student";
           req.session.isLogin = 1;
           req.session.firstLogin = 0;
@@ -135,19 +136,19 @@ router.post('/getLogin', (req, res) => {
   connection.end();
 });
 
-// ÍË³öµÇÂ¼, É¾³ýsession
+// é€€å‡ºç™»å½•, åˆ é™¤session
 router.get('/getLogout', function (req, res) {
   console.log('getLogout');
   console.log(req.session);
 
-  req.session.username = null;
+  req.session.stu_no = null;
   req.session.role = null;
   req.session.isLogin = 0;
   req.session.firstLogin = 0;
   res.redirect('/login');
 });
 
-// ÐÞ¸ÄÃÜÂë, Èç¹ûÊÇµÚÒ»´ÎÐÞ¸ÄÔòÍ¬Ê±ÐÞ¸Äsession
+// ä¿®æ”¹å¯†ç , å¦‚æžœæ˜¯ç¬¬ä¸€æ¬¡ä¿®æ”¹åˆ™åŒæ—¶ä¿®æ”¹session
 router.post('/changePassword', (req, res) => {
   console.log("changePassword");
   console.log(req.session);
@@ -163,12 +164,12 @@ router.post('/changePassword', (req, res) => {
   });
   connection.connect();
   var sql;
-  // ÏÈ²éÑ¯ÃÜÂëÊÇ·ñÕýÈ·
+  // å…ˆæŸ¥è¯¢å¯†ç æ˜¯å¦æ­£ç¡®
   sql = "select COUNT(*) as num from student where stu_no=? and stu_password=?";
   connection.query(sql, [stu_no, oldpassword], function (error, results) {
     if (error) throw console.error;
     if (results[0].num == 1) {
-      // ÃÜÂëÕýÈ·Ôò½øÐÐ¸üÐÂ
+      // å¯†ç æ­£ç¡®åˆ™è¿›è¡Œæ›´æ–°
       sql = "update student set stu_password=? where stu_no=?";
       connection.query(sql, [newpassword, stu_no], function (error, results) {
         if (error) console.log(error);
@@ -188,32 +189,32 @@ router.post('/changePassword', (req, res) => {
   })
 });
 
-// ½ÓÊÜÊÓÆµ½Ó¿Ú
+// æŽ¥å—è§†é¢‘æŽ¥å£
 router.post('/upload', upload.single('file'), (req, res) => {
-  // Ã»ÓÐ¸½´øÎÄ¼þ
+  // æ²¡æœ‰é™„å¸¦æ–‡ä»¶
   if (!req.file) {
     res.json({ok: false});
     return;
   }
 
-  // Ê¹ÓÃmulterÖÐ¼ä¼þºó£¬½âÎöformdataÊý¾ÝÖ®ºó½«ÔÚreqÖÐÌí¼ÓbodyºÍfileÁ½¸ö¶ÔÏó
+  // ä½¿ç”¨multerä¸­é—´ä»¶åŽï¼Œè§£æžformdataæ•°æ®ä¹‹åŽå°†åœ¨reqä¸­æ·»åŠ bodyå’Œfileä¸¤ä¸ªå¯¹è±¡
   console.log(req.file);
+  // å°†ä¸Šä¼ çš„æ–‡ä»¶çš„åŽŸå§‹åå­—è½¬åŒ–ä¸ºutf-8å­—ç¬¦ä¸²
+  let str_originalname = iconv.decode(req.file.originalname, 'utf-8');
   
-  // Êä³öÎÄ¼þÐÅÏ¢
+  // è¾“å‡ºæ–‡ä»¶ä¿¡æ¯
   console.log('====================================================');
   console.log('fieldname: ' + req.file.fieldname);
-  console.log('originalname: ' + req.file.originalname);
+  console.log('originalname: ' + str_originalname);
   console.log('mimetype: ' + req.file.mimetype);
   console.log('size: ' + (req.file.size / 1024).toFixed(2) + 'KB');
   console.log('destination: ' + req.file.destination);
   console.log('filename: ' + req.file.filename);
   console.log('path: ' + req.file.path);
 
-  // ÖØÃüÃûÎÄ¼þ
+  // é‡å‘½åæ–‡ä»¶
   let oldPath = path.join(req.file.path);
-  let newPath = path.join('uploads/' + req.file.originalname);
-  console.log(oldPath);
-  console.log(newPath);
+  let newPath = iconv.encode('uploads/' + str_originalname, 'gbk');
   fs.rename(oldPath, newPath, (err) => {
     if (err) {
       res.json({ok: false});

@@ -26,7 +26,7 @@
         type: "get",
         contentType: 'application/json',
         data: {
-          stu_no: localStorage.getItem('username'),
+          stu_no: localStorage.getItem('stu_no'),
         },
         xhrFields: {
           withCredentials: true
@@ -34,8 +34,9 @@
         crossDomain: true,
         success: function (data) {
           console.log(data);
+          localStorage.setItem('stu_name', data.stu_name);
           let info = "开课年级:" + data.stu_grade + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
-          info += '学号:' + localStorage.getItem('username') + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
+          info += '学号:' + localStorage.getItem('stu_no') + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
           info += '姓名:' + data.stu_name + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
           info += '性别:' + data.stu_sex + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
           info += '班级:' + data.stu_class_fname + '/' + data.stu_class_sname;
@@ -118,6 +119,14 @@
         <td colspan="6" id="info"></td>
       </tr>
 
+      <tr>
+        <td colspan="3">
+          摄像头
+        </td>
+        <td colspan="3">
+          屏幕
+        </td>
+      </tr>
       <tr style="height:400px">
         <td colspan="3">
           <video id="localvideo" controls autoplay></video>
@@ -165,7 +174,7 @@
       </tr>
     </table>
   </div>
-  <script src="webrtc/client.js"></script>
+  <script src="webrtc/client.js" charset="utf-8"></script>
 </body>
 
 </html>
