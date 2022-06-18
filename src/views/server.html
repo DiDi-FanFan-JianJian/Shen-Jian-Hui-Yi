@@ -20,7 +20,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const stu = (urlParams.get('stu_no') != null) ? urlParams.get('stu_no') : '1234567';
       $.ajax({
-        url: "http://43.142.102.170:3000/getInfo",
+        url: "https://43.142.102.170/getInfo",
         type: "get",
         contentType: 'application/json',
         data: {
@@ -41,7 +41,7 @@
         }
       });
       $.ajax({
-        url: "http://43.142.102.170:3000/getInfo",
+        url: "https://43.142.102.170/getInfo",
         type: "get",
         contentType: 'application/json',
         data: {
@@ -60,7 +60,7 @@
       $("#logout").click(function () {
         localStorage.clear();
         $.ajax({
-          url: "http://43.142.102.170:3000/getLogout",
+          url: "https://43.142.102.170/getLogout",
           type: "get",
           xhrFields: {
             withCredentials: true
