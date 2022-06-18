@@ -2,28 +2,24 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const session = require('express-session')
 const app = express()
+const cors = require('cors');
 const wsInstance = require('express-ws')(app);
 
 /******** bodyParser ********/
 app.use(bodyParser.json())
 
 
-/******** é™æ€æ–‡ä»¶ ********/
+/******** é™æ€æ–‡ä»? ********/
 app.use(express.static(__dirname + '/public'))
 
 
-/******** å“åº”å¤´ ********/
-app.all('*', function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With');
-  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
-
+/******** ÏìÓ¦Í· ********/
+app.use(cors({
+  "origin": "*",//´Ë´¦Ò²¿ÉÒÔ¸üÌæÎª£¬ÔÊĞíµÄÖ¸¶¨ÓòÃû£¬ÀıÈç£ºyousite.com
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 200
+}));
 
 /******** session ********/
 app.use(session({
@@ -31,7 +27,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7å¤©
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7å¤?
     secure: false,
   }
 }));
