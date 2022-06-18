@@ -8,11 +8,11 @@ const wsInstance = require('express-ws')(app);
 app.use(bodyParser.json())
 
 
-/******** ¾²Ì¬ÎÄ¼þ ********/
+/******** é™æ€æ–‡ä»¶ ********/
 app.use(express.static(__dirname + '/public'))
 
 
-/******** ÏìÓ¦Í· ********/
+/******** å“åº”å¤´ ********/
 app.all('*', function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With');
@@ -31,13 +31,13 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7Ìì
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7å¤©
     secure: false,
   }
 }));
 
 
-/******** Ò³ÃæÇëÇó ********/
+/******** é¡µé¢è¯·æ±‚ ********/
 const page_router = require('./routers/index')
 app.use('/', page_router);
 
@@ -50,7 +50,7 @@ app.use('/', api_router);
 /******** websocket ********/
 app.ws('/', ws => {
   ws.on('message', data => {
-    // Î´×öÒµÎñ´¦Àí£¬ÊÕµ½ÏûÏ¢ºóÖ±½Ó¹ã²¥
+    // æœªåšä¸šåŠ¡å¤„ç†ï¼Œæ”¶åˆ°æ¶ˆæ¯åŽç›´æŽ¥å¹¿æ’­
     wsInstance.getWss().clients.forEach(server => {
       if (server !== ws) {
         server.send(data);
@@ -61,7 +61,7 @@ app.ws('/', ws => {
 });
 
 
-/******** ¼àÌý ********/
+/******** ç›‘å¬ ********/
 app.listen(3000, () => {
   console.log('server running at port 3000');
 })

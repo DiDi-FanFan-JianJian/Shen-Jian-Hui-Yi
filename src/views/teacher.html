@@ -35,13 +35,13 @@
       $("#logout").click(function () {
         localStorage.clear();
         $.ajax({
-          url: "http://localhost:3000/getLogout",
+          url: "http://43.142.102.170:3000/getLogout",
           type: "get",
         })
       })
 
       $.ajax({
-        url: "http://localhost:3000/getAllStu",
+        url: "http://43.142.102.170:3000/getAllStu",
         type: "get",
         contentType: 'application/json',
         success: function (data) {

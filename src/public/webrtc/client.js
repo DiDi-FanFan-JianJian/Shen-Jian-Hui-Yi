@@ -1,4 +1,4 @@
-const ws = new WebSocket('ws://localhost:3000');
+const ws = new WebSocket('ws://43.142.102.170:3000');
 const localVideo = document.getElementById('localvideo');
 const localScreen = document.getElementById('screenvideo');
 
@@ -205,7 +205,7 @@ function saveScreen() {
   let name = 'u' + myuid + '-' + uname + '-screen-' + time + '.webm';
   formData.append('file', blob, name);
   let xhr = new XMLHttpRequest();
-  xhr.open('POST', 'http://localhost:3000/upload');
+  xhr.open('POST', 'http://43.142.102.170:3000/upload');
   xhr.send(formData);
   screenChunks = [];
 }
@@ -221,7 +221,7 @@ function saveVideo() {
   let name = 'u' + myuid + '-' + uname + '-video-' + time + '.webm';
   formData.append('file', blob, name);
   let xhr = new XMLHttpRequest();
-  xhr.open('POST', 'http://localhost:3000/upload');
+  xhr.open('POST', 'http://43.142.102.170:3000/upload');
   xhr.send(formData);
   videoChunks = [];
 }
