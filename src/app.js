@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const session = require('express-session')
 const app = express()
+const cors = require('cors');
 const wsInstance = require('express-ws')(app);
 
 /******** bodyParser ********/
@@ -13,17 +14,12 @@ app.use(express.static(__dirname + '/public'))
 
 
 /******** 响应头 ********/
-app.all('*', function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With');
-  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
-
+app.use(cors({
+  "origin": "*",//此处也可以更替为，允许的指定域名，例如：yousite.com
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 200
+}));
 
 /******** session ********/
 app.use(session({

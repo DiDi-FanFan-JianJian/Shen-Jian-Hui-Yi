@@ -31,6 +31,7 @@
         success: function (data) {
           console.log(data);
           localStorage.setItem('stu_name', data.stu_name);
+          console.log(data.stu_name);
           let info = "开课年级:" + data.stu_grade + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
           info += '学号:' + localStorage.getItem('stu_no') + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
           info += '姓名:' + data.stu_name + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';

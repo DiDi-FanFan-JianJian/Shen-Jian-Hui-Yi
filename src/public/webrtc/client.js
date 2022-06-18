@@ -9,6 +9,7 @@ let pc = [];
 let idx = 0;
 let myuid = localStorage.getItem('stu_no');
 let uname = localStorage.getItem('stu_name');
+console.log(uname);
 let options = {
   audioBitrate: 128000,
   videoBitrate: 2500000,
