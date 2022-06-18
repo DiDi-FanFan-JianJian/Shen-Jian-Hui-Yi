@@ -26,6 +26,10 @@
         data: {
           stu_no: stu,
         },
+        xhrFields: {
+          withCredentials: true
+        },
+        crossDomain: true,
         success: function (data) {
           console.log(data);
           let info = "开课年级:" + data.stu_grade + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
@@ -43,6 +47,10 @@
         data: {
           stu_no: localStorage.getItem('stu_no'),
         },
+        xhrFields: {
+          withCredentials: true
+        },
+        crossDomain: true,
         success: function (data) {
           console.log(data);
           let info = '监考人:' + data.stu_name + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
@@ -54,6 +62,10 @@
         $.ajax({
           url: "http://localhost:3000/getLogout",
           type: "get",
+          xhrFields: {
+            withCredentials: true
+          },
+          crossDomain: true,
         })
       })
     });

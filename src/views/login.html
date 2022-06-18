@@ -36,6 +36,10 @@
             stu_no: stu_no,
             stu_password: password
           }),
+          xhrFields: {
+            withCredentials: true
+          },
+          crossDomain: true,
           success: function (data) {
             if (data.canLogin == false) {
               // ÃÜÂë´íÎóµÈÎÊÌâ

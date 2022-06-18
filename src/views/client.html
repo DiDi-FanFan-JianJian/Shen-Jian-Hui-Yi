@@ -28,6 +28,10 @@
         data: {
           stu_no: localStorage.getItem('stu_no'),
         },
+        xhrFields: {
+          withCredentials: true
+        },
+        crossDomain: true,
         success: function (data) {
           console.log(data);
           localStorage.setItem('stu_name', data.stu_name);
@@ -87,6 +91,10 @@
         $.ajax({
           url: "http://localhost:3000/getLogout",
           type: "get",
+          xhrFields: {
+            withCredentials: true
+          },
+          crossDomain: true,
         })
       })
     });
