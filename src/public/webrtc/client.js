@@ -7,8 +7,8 @@ let videoRecorder = null, screenRecorder = null;
 let videoChunks = [], screenChunks = [];
 let pc = [];
 let idx = 0;
-let myuid = localStorage.getItem('username');
-let uname = 'zhangsan';
+let myuid = localStorage.getItem('stu_no');
+let uname = localStorage.getItem('stu_name');
 let options = {
   audioBitrate: 128000,
   videoBitrate: 2500000,
@@ -199,7 +199,7 @@ function saveScreen() {
     return;
   let blob = new Blob(screenChunks, {type: 'video/webm'});
   let formData = new FormData();
-  // -Äê-ÔÂ-ÈÕ-Ê±-·Ö-Ãë
+  // -å¹´-æœˆ-æ—¥-æ—¶-åˆ†-ç§’
   let date = new Date();
   let time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes() + '-' + date.getSeconds();
   let name = 'u' + myuid + '-' + uname + '-screen-' + time + '.webm';
@@ -215,7 +215,7 @@ function saveVideo() {
     return;
   let blob = new Blob(videoChunks, {type: 'video/webm'});
   let formData = new FormData();
-  // -Äê-ÔÂ-ÈÕ-Ê±-·Ö-Ãë
+  // -å¹´-æœˆ-æ—¥-æ—¶-åˆ†-ç§’
   let date = new Date();
   let time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes() + '-' + date.getSeconds();
   let name = 'u' + myuid + '-' + uname + '-video-' + time + '.webm';
@@ -240,7 +240,7 @@ function initScreenRecorder(stream = screenStream) {
     saveScreen();
   }
   screenRecorder.start();
-  // 5ÃëºóÍ£Ö¹
+  // 5ç§’ååœæ­¢
   setTimeout(function() {
     if (screenRecorder.state != "inactive") {
       screenRecorder.stop();
@@ -263,7 +263,7 @@ function initVideoRecorder(stream = videoStream) {
     saveVideo();
   }
   videoRecorder.start();
-  // 5ÃëºóÍ£Ö¹
+  // 5ç§’ååœæ­¢
   setTimeout(function() {
     if (videoRecorder.state != "inactive") {
       videoRecorder.stop();
@@ -307,7 +307,7 @@ function openScreen() {
 }
 
 function endVideo() {
-  // peer ¶Ï¿ªÁ¬½Ó
+  // peer æ–­å¼€è¿æ¥
   for (let idx in pc) {
     let peer = pc[idx];
     if (peer.uid[0] == 'v') {
@@ -333,7 +333,7 @@ function endVideo() {
 }
 
 function endScreen() {
-  // peer ¶Ï¿ªÁ¬½Ó
+  // peer æ–­å¼€è¿æ¥
   for (let idx in pc) {
     let peer = pc[idx];
     if (peer.uid[0] == 's') {
@@ -390,7 +390,7 @@ function check_ready() {
 ws.onmessage = function(msg) {
   msg = JSON.parse(msg.data);
   console.log('onmessage: ', msg.type);
-  // ¹ã²¥
+  // å¹¿æ’­
   if (msg.type === 'server_ready') {
     check_ready();
     return;
@@ -399,7 +399,7 @@ ws.onmessage = function(msg) {
     makeCall();
     return;
   }
-  // µ¥²¥
+  // å•æ’­
   if (msg.target.slice(-7) !== myuid)
     return;
   if (msg.type === 'offer') {
@@ -427,13 +427,13 @@ document.getElementById('start2').addEventListener('click', openScreen);
 document.getElementById('end1').addEventListener('click', endVideo);
 document.getElementById('end2').addEventListener('click', endScreen);
 
-// ¼àÌıÒ³Ãæ¹Ø±Õ
+// ç›‘å¬é¡µé¢å…³é—­
 window.onbeforeunload = function() {
   endVideo();
   endScreen();
 }
 
-// wsÁ¬½Ó³É¹¦
+// wsè¿æ¥æˆåŠŸ
 ws.onopen = function() {
   check_ready();
 }

@@ -32,8 +32,6 @@
     $(function () {
       console.log("老师主页面");
 
-      $("#username").text(localStorage.getItem('username'));
-      $("#role").text(localStorage.getItem('role'));
       $("#logout").click(function () {
         localStorage.clear();
         $.ajax({
@@ -53,8 +51,8 @@
             let my_tr = $("<tr></tr>");
             let my_td1 = $("<td>" + data[i].stu_no + "</td>");
             let my_td2 = $("<td>" + data[i].stu_name + "</td>");
-            let my_td3 = $("<td style='color:red' id='v" + data[i].stu_no + "'>disconnect</td>");
-            let my_td4 = $("<td style='color:red' id='s" + data[i].stu_no + "'>disconnect</td>");
+            let my_td3 = $("<td style='color:red' id='v" + data[i].stu_no + "'>未连接</td>");
+            let my_td4 = $("<td style='color:red' id='s" + data[i].stu_no + "'>未连接</td>");
             let my_td5 = $("<td><a href='invigilation?stu_no=" + data[i].stu_no + "'>查看详情</a></td>")
             my_td1.appendTo(my_tr);
             my_td2.appendTo(my_tr);
@@ -92,7 +90,7 @@
       </tr>
     </table>
   </div>
-  <script src="webrtc/teacher.js" charset="GBK"></script>
+  <script src="webrtc/teacher.js" charset="utf-8"></script>
 </body>
 
 </html>

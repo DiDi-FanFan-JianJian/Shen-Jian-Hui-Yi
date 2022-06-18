@@ -71,28 +71,28 @@ router.post('/getLogin', (req, res) => {
   connection.query(sql, [stu_no], function (error, results) {
     if (error) throw console.error;
     if (results.length == 0) {
-      req.session.username = null;
+      req.session.stu_no = null;
       req.session.role = null;
       req.session.isLogin = 0;
       req.session.firstLogin = 0;
       res.json({ msg: "Can't find your account!!!", canLogin: false, role: '?', firstLogin: false });
     }
     else if (results.length > 1) {
-      req.session.username = null;
+      req.session.stu_no = null;
       req.session.role = null;
       req.session.isLogin = 0;
       req.session.firstLogin = 0;
       res.json({ msg: "System Error!!!", canLogin: false, role: '?', firstLogin: false });
     }
     else if (results[0].stu_password != stu_password) {
-      req.session.username = null;
+      req.session.stu_no = null;
       req.session.role = null;
       req.session.isLogin = 0;
       req.session.firstLogin = 0;
       res.json({ msg: "Password error!!!", canLogin: false, role: '?', firstLogin: false });
     }
     else if (results[0].stu_enable != '1') {
-      req.session.username = null;
+      req.session.stu_no = null;
       req.session.role = null;
       req.session.isLogin = 0;
       req.session.firstLogin = 0;
@@ -101,14 +101,14 @@ router.post('/getLogin', (req, res) => {
     else {
       if (results[0].stu_userlevel == 1) {
         if (results[0].stu_password == md5(stu_no)) {
-          req.session.username = req.body.stu_no;
+          req.session.stu_no = req.body.stu_no;
           req.session.role = "teacher";
           req.session.isLogin = 1;
           req.session.firstLogin = 1;
           res.json({ msg: "success", canLogin: true, role: 'teacher', firstLogin: true })
         }
         else {
-          req.session.username = req.body.stu_no;
+          req.session.stu_no = req.body.stu_no;
           req.session.role = "teacher";
           req.session.isLogin = 1;
           req.session.firstLogin = 0;
@@ -117,13 +117,13 @@ router.post('/getLogin', (req, res) => {
       }
       else {
         if (results[0].stu_password == md5(stu_no)) {
-          req.session.username = req.body.stu_no;
+          req.session.stu_no = req.body.stu_no;
           req.session.role = "student";
           req.session.isLogin = 1;
           req.session.firstLogin = 1;
           res.json({ msg: "success", canLogin: true, role: 'student', firstLogin: true });
         } else {
-          req.session.username = req.body.stu_no;
+          req.session.stu_no = req.body.stu_no;
           req.session.role = "student";
           req.session.isLogin = 1;
           req.session.firstLogin = 0;
@@ -141,7 +141,7 @@ router.get('/getLogout', function (req, res) {
   console.log('getLogout');
   console.log(req.session);
 
-  req.session.username = null;
+  req.session.stu_no = null;
   req.session.role = null;
   req.session.isLogin = 0;
   req.session.firstLogin = 0;

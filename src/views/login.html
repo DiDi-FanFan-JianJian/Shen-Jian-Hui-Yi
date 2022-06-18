@@ -18,10 +18,10 @@
     })
 
     function check() {
-      var username = $("#username").val().trim();
+      var stu_no = $("#stu_no").val().trim();
       var password = $("#password").val();
 
-      if (username.length == 0) {
+      if (stu_no.length == 0) {
         alert("请输入用户名");
       }
       else if (password.length == 0) {
@@ -33,7 +33,7 @@
           type: "post",
           contentType: 'application/json',
           data: JSON.stringify({
-            stu_no: username,
+            stu_no: stu_no,
             stu_password: password
           }),
           success: function (data) {
@@ -45,13 +45,13 @@
             else if (data.role == 'teacher') {
               // 老师来了
               if (data.firstLogin == true) {
-                localStorage.setItem('username', username);
+                localStorage.setItem('stu_no', stu_no);
                 localStorage.setItem('role', 'teacher');
                 console.log("跳转到密码修改界面");
                 $(location).attr("href", "password");
               }
               else {
-                localStorage.setItem('username', username);
+                localStorage.setItem('stu_no', stu_no);
                 localStorage.setItem('role', 'teacher');
                 console.log("跳转到server端, 老师正确登录");
                 $(location).attr("href", "index");
@@ -60,12 +60,12 @@
             else {
               // 学生来了
               if (data.firstLogin == true) {
-                localStorage.setItem('username', username);
+                localStorage.setItem('stu_no', stu_no);
                 localStorage.setItem('role', 'student');
                 console.log("跳转到密码修改界面");
                 $(location).attr("href", "password");
               } else {
-                localStorage.setItem('username', username);
+                localStorage.setItem('stu_no', stu_no);
                 localStorage.setItem('role', 'student');
                 console.log("跳转到client端, 学生正确登录");
                 $(location).attr("href", "index");
@@ -133,7 +133,7 @@
 
               <tr>
                 <td style="font-family:Verdana, Arial, Helvetica, sans-serif;">用户名：</td>
-                <td><input type="text" name="username" size="18" value="" maxlength="7" id="username">
+                <td><input type="text" name="stu_no" size="18" value="" maxlength="7" id="stu_no">
                 </td>
               </tr>
 

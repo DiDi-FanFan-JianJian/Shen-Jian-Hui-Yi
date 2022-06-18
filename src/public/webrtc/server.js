@@ -213,12 +213,12 @@ ws.onmessage = function(msg) {
   }
 }
 
-// 建立连接
+// 寤虹珛杩炴帴
 ws.onopen = function() {
   make_call();
 }
 
-// 页面关闭
+// 椤甸潰鍏抽棴
 window.onbeforeunload = function() {
   let msg = {
     type: 'close',

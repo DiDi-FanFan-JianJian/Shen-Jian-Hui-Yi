@@ -41,7 +41,7 @@
         type: "get",
         contentType: 'application/json',
         data: {
-          stu_no: localStorage.getItem('username'),
+          stu_no: localStorage.getItem('stu_no'),
         },
         success: function (data) {
           console.log(data);
@@ -97,6 +97,6 @@
       </tr>
     </table>
   </div>
-  <script src="webrtc/server.js"></script>
+  <script src="webrtc/server.js" charset="utf-8"></script>
 </body>
 </html>
