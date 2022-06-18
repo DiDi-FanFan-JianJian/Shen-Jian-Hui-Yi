@@ -1,4 +1,4 @@
-const ws = new WebSocket('ws://43.142.102.170:3000');
+const ws = new WebSocket('wss://43.142.102.170/wss');
 const localVideo = document.getElementById('localvideo');
 const localScreen = document.getElementById('screenvideo');
 
