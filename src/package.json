@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "body-parser": "^1.20.0",
+    "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "encoding": "^0.1.13",
     "express": "^4.18.1",
@@ -8,6 +9,7 @@
     "express-ws": "^5.0.2",
     "fs": "^0.0.1-security",
     "iconv-lite": "^0.6.3",
+    "ini": "^3.0.0",
     "md5-node": "^1.0.1",
     "multer": "^1.4.5-lts.1",
     "mysql": "^2.18.1",
