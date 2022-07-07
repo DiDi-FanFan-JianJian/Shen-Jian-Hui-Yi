@@ -7,7 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>主页</title>
   <script type="text/javascript" src="libs/jquery.js"></script>
-
+  <script type="text/javascript" src="libs/adapter.js"></script>
+  <script type="text/javascript" src="libs/online.js"></script>
   <style type="text/css">
     video {
       width: 640px;
@@ -18,11 +19,10 @@
   <script>
     $(function () {
       // 渲染页面
-      console.log("学生主页面");
       $('#end1').attr('disabled', true);
       $('#end2').attr('disabled', true);
       $.ajax({
-        url: "http://localhost:3000/getInfo",
+        url: "https://43.142.102.170/getInfo",
         type: "get",
         contentType: 'application/json',
         data: {
@@ -33,9 +33,8 @@
         },
         crossDomain: true,
         success: function (data) {
-          console.log(data);
           localStorage.setItem('stu_name', data.stu_name);
-          console.log(data.stu_name);
+          uname = data.stu_name;
           let info = "开课年级:" + data.stu_grade + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
           info += '学号:' + localStorage.getItem('stu_no') + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
           info += '姓名:' + data.stu_name + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0';
@@ -46,50 +45,10 @@
       })
 
       // 绑定事件
-      $('#start1').click(function start1() {
-        $('#end1').attr('disabled', false);
-
-        let audio1 = $('input[name=need_audio1]:checked').val();
-        console.log(audio1);
-
-        $('#start1').attr("disabled", true);
-        $('input[name=need_audio1]').attr('disabled', true);
-      });
-
-      $('#start2').click(function start2() {
-        $('#end2').attr('disabled', false);
-
-        let audio2 = $('input[name=need_audio2]:checked').val();
-        console.log(audio2);
-
-        $('#start2').attr("disabled", true);
-        $('input[name=need_audio2]').attr('disabled', true);
-      });
-
-      $('#end1').click(function end1() {
-        $('#start1').attr('disabled', false);
-        $('input[name=need_audio1]').attr('disabled', false);
-
-        let audio1 = $('input[name=need_audio1]:checked').val();
-        console.log(audio1);
-
-        $('#end1').attr("disabled", true);
-      });
-
-      $('#end2').click(function end2() {
-        $('#start2').attr('disabled', false);
-        $('input[name=need_audio2]').attr('disabled', false);
-
-        let audio2 = $('input[name=need_audio2]:checked').val();
-        console.log(audio2);
-
-        $('#end2').attr("disabled", true);
-      });
-
       $("#logout").click(function () {
         localStorage.clear();
         $.ajax({
-          url: "http://localhost:3000/getLogout",
+          url: "https://43.142.102.170/getLogout",
           type: "get",
           xhrFields: {
             withCredentials: true
@@ -103,7 +62,7 @@
 </head>
 
 <body>
-  <div id="left" style="width:10%; height:500px; float:left;">
+  <div id="left" style="width:10%; height:500px; float: left;">
     <table align="left" width="85%" border="0" cellpadding="0" cellspacing="0">
       <left>
         <ul id="leftmenu"><br><br>考试系统<li><a href="index">主页</a></li>
@@ -113,9 +72,9 @@
       </left>
     </table>
   </div>
-  <div id="main" style="float: left;">
+  <div id="main" style="float: left;width:90%;">
     <h1 style="margin-left: 46%">视频监考</h1>
-    <table border="1" width="70%" style="text-align:center">
+    <table border="1" width="70%" style="text-align:center;margin:auto;">
       <tr>
         <td colspan="6" id="info"></td>
       </tr>
@@ -130,10 +89,10 @@
       </tr>
       <tr style="height:400px">
         <td colspan="3">
-          <video id="localvideo" controls autoplay></video>
+          <video id="localvideo" controls autoplay muted></video>
         </td>
         <td colspan="3">
-          <video id="screenvideo" controls autoplay></video>
+          <video id="screenvideo" controls autoplay muted></video>
         </td>
       </tr>
 
@@ -175,7 +134,7 @@
       </tr>
     </table>
   </div>
-  <script src="webrtc/client.js" charset="utf-8"></script>
+  <script src="webrtc/new_client.js" charset="utf-8"></script>
 </body>
 
 </html>

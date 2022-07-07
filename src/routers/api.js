@@ -7,7 +7,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const ini = require('ini');
-const { execFile } = require('child_process');
+const execFile = require('child_process').execFile;
 // 读取全局参数
 const config = ini.parse(fs.readFileSync('/etc/webrtc-dd-ff-jj.conf', 'utf-8'));
 // 设置上传的目录文件夹
@@ -195,14 +195,14 @@ router.post('/changePassword', (req, res) => {
 });
 
 // 接受录像接口
-router.post('/upload', upload.single('video'), (req, res) => {
+router.post('/uploadvideo', upload.single('video'), (req, res) => {
   // 没有附带文件
   if (!req.file) {
     res.json({ ok: false });
     return;
   }
   // 输出文件信息
-  console.log(req.file);
+  // console.log(req.file);
   // 将上传的文件的原始名字转化为utf-8字符串
   let str_originalname = iconv.decode(req.file.originalname, 'utf-8');
   // 重命名文件
@@ -210,79 +210,97 @@ router.post('/upload', upload.single('video'), (req, res) => {
   let newPath = iconv.encode('uploads/' + str_originalname, 'gbk');
   fs.rename(oldPath, newPath, (err) => {
     if (err) {
-      res.json({ ok: false });
       console.log(err);
+      res.json({ ok: false });
     } else {
-      // 响应
-      res.json({ ok: true });
-
-      // 目录名
-      let dir1 = Object.keys(config['root-dir'])[0];
+      // 获取配置
+      let rate = config['frame'].rate;
+      let frame = config['frame'].width + ':' + config['frame'].high;
+      let dir1 = config['root-dir'].dir + '/u';
       let dir2 = req.session.stu_no ? req.session.stu_no : 'none';
       let dir = dir1 + dir2;
 
       // 如果是第一次上传视频
+      console.log(req.session);
       if (!req.session.video || req.session.video.length == 0) {
         console.log("--> new video" + req.session.stu_no);
         req.session.video = str_originalname.split(".")[0];
         let src = str_originalname;
-        let child = execFile("test.sh", [dir, src], (error, stdout, stderr) => {
+        // console.log(dir + "  " + src)
+
+        let tem = '#!/bin/bash\n' +
+          './test.sh ' + dir + ' ' + src + ' ' + rate + ' ' + frame;
+        let tem_name = 'script/' + req.session.stu_no + 'video.sh';
+        fs.writeFileSync(tem_name, iconv.encode(tem, 'gbk'));
+        fs.chmodSync(tem_name, 0o777);
+
+        execFile("bash", [tem_name], { encoding: "gbk" }, (error, stdout, stderr) => {
           if (error) {
             throw error;
           }
           console.log(stderr);
           console.log(stdout);
         });
-        console.log(child);
       }
       // 不是第一次上传视频，跟req.session.video合并
       else {
         console.log("--> another video" + req.session.stu_no);
-        src1 = req.session.video + '.mp4';
+        src1 = req.session.video + '.webm';
         src2 = str_originalname;
-        let child = execFile('test.sh', [dir, src1, src2], (error, stdout, stderr) => {
-          if (error) {
-            throw error;
-          }
-          console.log(stderr);
-          console.log(stdout);
-        });
-        console.log(child);
+        // console.log(dir + "  " + src1 + "  " + src2)
+
+        if (src1 != src2) {
+          let tem = '#!/bin/bash\n' +
+            './test.sh ' + dir + ' ' + src1 + ' ' + src2 + ' ' + rate + ' ' + frame;
+          let tem_name = 'script/' + req.session.stu_no + 'video.sh';
+          fs.writeFileSync(tem_name, iconv.encode(tem, 'gbk'));
+          fs.chmodSync(tem_name, 0o777);
+
+          execFile('bash', [tem_name], { encoding: "gbk" }, (error, stdout, stderr) => {
+            if (error) {
+              throw error;
+            }
+            console.log(stderr);
+            console.log(stdout);
+          });
+        }
       }
+      // 响应
+      res.json({ ok: true });
     }
   });
 });
 
-// 结束一次录像
-router.get('/endvideo', (req, res) => {
+// 开始一次录像
+router.get('/startvideo', (req, res) => {
   req.session.video = null;
   res.json({ ok: true });
 })
 
 // 接受录屏接口
-router.post('/upload', upload.single('screen'), (req, res) => {
+router.post('/uploadscreen', upload.single('screen'), (req, res) => {
   // 没有附带文件
   if (!req.file) {
     res.json({ ok: false });
     return;
   }
   // 输出文件信息
-  console.log(req.file);
+  // console.log(req.file);
   // 将上传的文件的原始名字转化为utf-8字符串
   let str_originalname = iconv.decode(req.file.originalname, 'utf-8');
+
   // 重命名文件
   let oldPath = path.join(req.file.path);
   let newPath = iconv.encode('uploads/' + str_originalname, 'gbk');
   fs.rename(oldPath, newPath, (err) => {
     if (err) {
-      res.json({ ok: false });
       console.log(err);
+      res.json({ ok: false });
     } else {
-      // 响应
-      res.json({ ok: true });
-
-      // 目录名
-      let dir1 = Object.keys(config['root-dir'])[0];
+      // 获取配置
+      let rate = config['frame'].rate;
+      let frame = config['frame'].width + ':' + config['frame'].high;
+      let dir1 = config['root-dir'].dir + '/u';
       let dir2 = req.session.stu_no ? req.session.stu_no : 'none';
       let dir = dir1 + dir2;
 
@@ -291,35 +309,53 @@ router.post('/upload', upload.single('screen'), (req, res) => {
         console.log("--> new screen" + req.session.stu_no);
         req.session.screen = str_originalname.split(".")[0];
         let src = str_originalname;
-        let child = execFile("test.sh", [dir, src], (error, stdout, stderr) => {
+        // console.log(dir + "  " + src);
+
+        let tem = '#!/bin/bash\n' +
+          './test.sh ' + dir + ' ' + src + ' ' + rate + ' ' + frame;
+        let tem_name = 'script/' + req.session.stu_no + 'screen.sh';
+        fs.writeFileSync(tem_name, iconv.encode(tem, 'gbk'));
+        fs.chmodSync(tem_name, 0o777);
+
+        execFile("bash", [tem_name], { encoding: 'gbk' }, (error, stdout, stderr) => {
           if (error) {
             throw error;
           }
           console.log(stderr);
           console.log(stdout);
         });
-        console.log(child);
       }
       // 不是第一次上传视频，跟req.session.video合并
       else {
         console.log("--> another screen" + req.session.stu_no);
-        src1 = req.session.video + '.mp4';
+        src1 = req.session.screen + '.webm';
         src2 = str_originalname;
-        let child = execFile('test.sh', [dir, src1, src2], (error, stdout, stderr) => {
-          if (error) {
-            throw error;
-          }
-          console.log(stderr);
-          console.log(stdout);
-        });
-        console.log(child);
+        // console.log(dir + "  " + src1 + "  " + src2);
+
+        if (src1 != src2) {
+          let tem = '#!/bin/bash\n' +
+            './test.sh ' + dir + ' ' + src1 + ' ' + src2 + ' ' + rate + ' ' + frame;
+          let tem_name = 'script/' + req.session.stu_no + 'screen.sh';
+          fs.writeFileSync(tem_name, iconv.encode(tem, 'gbk'));
+          fs.chmodSync(tem_name, 0o777);
+
+          execFile('bash', [tem_name], { encoding: 'gbk' }, (error, stdout, stderr) => {
+            if (error) {
+              throw error;
+            }
+            console.log(stderr);
+            console.log(stdout);
+          });
+        }
       }
+      // 响应
+      res.json({ ok: true });
     }
   });
 });
 
-// 结束一次录屏
-router.get('/endscreen', (req, res) => {
+// 开始一次录屏
+router.get('/startscreen', (req, res) => {
   req.session.screen = null;
   res.json({ ok: true });
 })

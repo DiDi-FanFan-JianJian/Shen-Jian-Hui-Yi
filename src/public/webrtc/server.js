@@ -1,10 +1,169 @@
-const ws = new WebSocket('ws://localhost:3000');
+//////////////////////////////////////////////////////////////////////
+// 全局变量
+let ws = null;
+let ws_server = 'wss://43.142.102.170/wss';
+let pc = [];
+const stu_no = getQueryVariable('stu_no');
+
+//////////////////////////////////////////////////////////////////////
+// dom
 const remoteVideo = document.getElementById('remoteVideo');
 const remoteScreen = document.getElementById('remoteScreen');
-const stu_no = getQueryVariable('stu_no');
-console.log('stu_no: ', stu_no);
-let pc = [];
-/////////////////
+
+//////////////////////////////////////////////////////////////////////
+// websocket
+
+ws_connect();
+
+function ws_connect() {
+  ws = new WebSocket(ws_server);
+  ws.onopen = ws_onopen;
+  ws.onmessage = ws_onmessage;
+  ws.onclose = ws_onclose;
+  ws.onerror = ws_onclose;
+}
+
+function ws_onmessage(event) {
+  let msg = JSON.parse(event.data);
+
+  if (!msg.uid || msg.uid.slice(-7) !== stu_no)
+    return;
+  
+  // 单播
+  if (msg.type === 'answer') {
+    handleAnswer(msg);
+  }
+  else if (msg.type === 'offer') {
+    handleOffer(msg);
+  }
+  else if (msg.type === 'new-ice-candidate') {
+    handleNewICECandidateMsg(msg);
+  }
+  else if (msg.type === 'close') {
+    handleRemoteClose(msg);
+  }
+  else if (msg.type === 'client_ready' && !pc[msg.uid]) {
+    make_call();
+  }
+  else {
+    log('??????????????????? what is this? ' + msg.type);
+  }
+}
+
+// 建立连接
+function ws_onopen() {
+  make_call();
+}
+
+function ws_onclose() {
+  log('ws_onclose');
+  setTimeout(function() {
+    ws_connect();
+  }, 1000);
+}
+
+//////////////////////////////////////////////////////////////////////
+// 事件处理
+async function handleOffer(msg) {
+  let uid = msg.uid;
+  log('handleOffer: ' + uid);
+  if (pc[uid]) {
+    log(uid + ' already exists');
+    return;
+  }
+
+  pc[uid] = new PeerConnection(uid);
+  let desc = new RTCSessionDescription(msg.sdp);
+  if (pc[uid].pc.signalingState !== 'stable') {
+    log('handleOffer: signalingState: ' + pc[uid].pc.signalingState);
+    await Promise.all([
+      pc[uid].pc.setLocalDescription({type: 'rollback'}),
+      pc[uid].pc.setRemoteDescription(desc),
+    ]);
+    return;
+  }
+  else {
+    await pc[uid].pc.setRemoteDescription(desc);
+  }
+
+  await pc[uid].pc.setLocalDescription(await pc[uid].pc.createAnswer());
+  sendToServer({
+    type: 'answer',
+    target: uid,
+    sdp: pc[uid].pc.localDescription,
+  });
+}
+ 
+async function handleAnswer(msg) {
+  log('handleAnswer');
+  let desc = new RTCSessionDescription(msg.sdp);
+  pc[msg.target].setRemoteDescription(desc);
+}
+
+async function handleNewICECandidateMsg(msg) {
+  log('handleNewICECandidateMsg');
+  if (!pc[msg.uid]) {
+    log('not me ' + msg.uid);
+    return;
+  }
+  let candidate = new RTCIceCandidate(msg.candidate);
+  try {
+    await pc[msg.target].pc.addIceCandidate(candidate);
+  }
+  catch (e) {
+    log_err(e);
+  }
+}
+
+function handleRemoteClose(msg) {
+  if (pc[msg.uid]) {
+    pc[msg.uid].close();
+    delete pc[msg.uid];
+    if (msg.uid[0] === 's')
+      remoteScreen.srcObject = null;
+    else
+      remoteVideo.srcObject = null;
+  }
+}
+
+// 页面关闭
+window.onbeforeunload = function() {
+  let pc_list = [];
+  for (let idx in pc) {
+    let peer = pc[idx];
+    pc_list.push(peer.id);
+  }
+  sendToServer({
+    type: 'close',
+    target: stu_no,
+    pc_list: pc_list,
+  });
+}
+
+//////////////////////////////////////////////////////////////////////
+// 工具函数
+function log(msg) {
+  console.log(msg);
+}
+
+function log_err(err) {
+  let time = new Date().toLocaleTimeString();
+  console.trace(time + ": " + err);
+}
+
+function sendToServer(msg) {
+  var msgJSON = JSON.stringify(msg);
+  log("Sending '" + msg.type);
+  ws.send(msgJSON);
+}
+
+function make_call() {
+  log('make_call:' + stu_no);
+  sendToServer({
+    type: 'start_video',
+    uid: stu_no,
+  });
+}
 
 function getQueryVariable(variable)
 {
@@ -17,213 +176,142 @@ function getQueryVariable(variable)
   return(false);
 }
 
-function addNewUser(uid) {
-  console.log('addNewUser: ', uid);
-  if (pc[uid] == null) {
-    pc[uid] = new RTCPeerConnectionWrapper(uid);
+//////////////////////////////////////////////////////////////////////
+// peer 对象
+const myIceServers = [
+  {
+    urls: 'turn:43.142.102.170:3478',
+    username: 'webrtc',
+    credential: '123456'
+  },
+  {
+    urls: 'stun:43.142.102.170:3478',
+  },
+];
+
+class PeerConnection {
+  constructor(id) {
+    console.log('PeerConnection: ' + id);
+    this.id = id;
+    this.pc = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: 'turn:43.142.102.170:3478',
+          username: 'webrtc',
+          credential: '123456'
+        },
+        {
+          urls: 'stun:43.142.102.170:3478',
+        },
+      ]
+    });
+
+    this.pc.onicecandidate = this.handleIceCandidate.bind(this);
+    this.pc.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent.bind(this);
+    this.pc.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent.bind(this);
+    this.pc.onsignalingstatechange = this.handleSignalingStateChangeEvent.bind(this);
+    this.pc.onnegotiationneeded = this.handleNegotiationNeeded.bind(this);
+    this.pc.ontrack = this.handleTrack.bind(this);
   }
-}
 
-function handleRemoteOffer(msg) {
-  console.log('handleRemoteOffer:', msg.uid);
-  let uid = msg.uid;
-  if (pc[uid] == null) {
-    pc[uid] = new RTCPeerConnectionWrapper(uid);
+  // ice
+  handleIceCandidate(event) {
+    if (event.candidate) {
+      log('ice candidate: ' + event.candidate.candidate);
+      sendToServer({
+        type: 'new-ice-candidate',
+        candidate: event.candidate,
+        target: this.id
+      });
+    }
   }
-  let sdp = new RTCSessionDescription({
-    type: 'offer',
-    sdp: msg.sdp
-  });
-  pc[uid].setRemoteDescription(sdp);
-  pc[uid].createAnswer();
-}
 
-function handleRemoteCandidate(msg) {
-  console.log('handleRemoteCandidate');
-  let candidate = new RTCIceCandidate({
-    sdpMLineIndex: msg.label,
-    candidate: msg.candidate
-  });
-  pc[msg.uid].addIceCandidate(candidate);
-}
+  // ice state
+  handleICEConnectionStateChangeEvent(event) {
+    log('ice connection state change: ' + this.pc.iceConnectionState);
+    switch (this.pc.iceConnectionState) {
+      case 'disconnected':
+      case 'failed':
+      case 'closed':
+        this.close();
+        break;
+    }
+  }
 
-function handleRemoteAnswer(msg) {
-  console.log('handleRemoteAnswer');
-  let sdp = new RTCSessionDescription({
-    type: 'answer',
-    sdp: msg.sdp
-  });
-  pc[msg.uid].setRemoteDescription(sdp);
-}
+  handleICEGatheringStateChangeEvent(event) {
+    log('ice gathering state changed to: ' + this.pc.iceGatheringState);
+  }
 
-function handleRemoteClose(msg) {
-  console.log('handleRemoteClose: ', msg.uid);
-  if (pc[msg.uid] != null) {
-    pc[msg.uid].close();
-    pc[msg.uid] = null;
-    if (msg.uid[0] === 's') {
-      remoteScreen.srcObject = null;
+  handleSignalingStateChangeEvent(event) {
+    log('signaling state changed to: ' + this.pc.signalingState);
+    switch(this.pc.signalingState) {
+      case 'closed':
+        this.close();
+        break;
+    }
+  }
+
+  // track
+  handleTrack(event) {
+    log('track: ' + this.id);
+    if (this.id[0] === 'v') {
+      remoteVideo.srcObject = event.streams[0];
     }
     else {
-      remoteVideo.srcObject = null;
+      remoteScreen.srcObject = event.streams[0];
     }
   }
-}
 
-///////////////// RTCPeerConnectionWrapper Class /////////////////////////
+  async handleNegotiationNeeded() {
+    log('negotiation needed');
+    try {
+      const offer = await this.pc.createOffer();
+      if (this.pc.signalingState != 'stable') {
+        log('signaling state is not stable');
+        return;
+      }
+      await this.pc.setLocalDescription(offer);
 
-function RTCPeerConnectionWrapper(uid) {
-  this.uid = uid;
-  this.pc = this.create();
-  this.remoteSdp = null;
-  this.video = null;
-} 
-
-RTCPeerConnectionWrapper.prototype.create = function() {
-  let pc = new RTCPeerConnection();
-
-  pc.onicecandidate = this.handleIceCandidate.bind(this);
-
-  pc.ontrack = this.hanndleRemoteAdded.bind(this);
-
-  pc.onremovestream = this.hanndleRemoteRemoved.bind(this);
-  
-  pc.oniceconnectionstatechange = this.handleStateChange.bind(this);
-
-  return pc;
-}
-
-RTCPeerConnectionWrapper.prototype.handleStateChange = function(event) {
-  console.log('handleStateChange: ', this.uid);
-  if (this.pc.iceConnectionState == 'disconnected') {
-    console.log('handleStateChange: disconnected');
-    this.close();
+      log('sending offer');
+      sendToServer({
+        type: 'offer',
+        uid: this.id,
+        target: this.id,
+        sdp: this.pc.localDescription
+      });
+    }
+    catch (e) {
+      log_err(e);
+    }
   }
-}
 
-RTCPeerConnectionWrapper.prototype.hanndleRemoteRemoved = function(event) {
-  console.log('handleRemoteRemoved');
-}
+  // 断线
+  close() {
+    log('close');
+    if (this.pc) {
+      this.pc.ontrack = null;
+      this.pc.onnicecandidate = null;
+      this.pc.oniceconnectionstatechange = null;
+      this.pc.onsignalingstatechange = null;
+      this.pc.onicegatheringstatechange = null;
+      this.pc.onnotificationneeded = null;
 
-RTCPeerConnectionWrapper.prototype.handleIceCandidate = function(event) {
-  console.log('handleIceCandidate: ', this.uid);
-  if (event.candidate) {
-    let msg = {
-      type: 'candidate',
-      label: event.candidate.sdpMLineIndex,
-      id: event.candidate.sdpMid,
-      target: this.uid,
-      candidate: event.candidate.candidate
-    };
-    ws.send(JSON.stringify(msg));
+      // Stop all transceivers on the connection
+      this.pc.getTransceivers().forEach(function(transceiver) {
+        transceiver.stop();
+      });
+
+      this.pc.close();
+    }
   }
-  else {
-    console.log('End of candidates.');
+
+  async setRemoteDescription(sdp) {
+    log('set remote description');
+    try {
+      await this.pc.setRemoteDescription(sdp);
+    }
+    catch (e) {
+      log_err(e);
+    }
   }
-}
-
-RTCPeerConnectionWrapper.prototype.hanndleRemoteAdded = function(event) {
-  console.log('onaddstream: ', this.uid);
-  this.video = this.uid[0] === 's' ? remoteScreen : remoteVideo;
-  this.video.srcObject = event.streams[0];
-}
-
-
-RTCPeerConnectionWrapper.prototype.createAnswerAndSendMessage = function(sessionDescription) {
-  console.log('createAnswerAndSendMessage: ', this.uid);
-  this.pc.setLocalDescription(sessionDescription);
-  let msg = {
-    type: 'answer',
-    target: this.uid,
-    sdp: sessionDescription.sdp
-  };
-  ws.send(JSON.stringify(msg));
-}
-
-RTCPeerConnectionWrapper.prototype.handleCreateOfferError = function(error) {
-  console.log('handleCreateOfferError: ', this.uid);
-  console.log(error);
-}
-
-RTCPeerConnectionWrapper.prototype.createAnswer = function() {
-  console.log('createAnswer: ', this.uid);
-  this.pc.createAnswer(this.createAnswerAndSendMessage.bind(this), this.handleCreateOfferError.bind(this));
-}
-
-RTCPeerConnectionWrapper.prototype.setRemoteDescription = function(sessionDescription) {
-  console.log('setRemoteDescription: ', this.uid);
-  if (this.remoteSdp != null) 
-    return;
-  this.remoteSdp = sessionDescription;
-  this.pc.setRemoteDescription(sessionDescription);
-}
-
-RTCPeerConnectionWrapper.prototype.addIceCandidate = function(candidate) {
-  console.log('addIceCandidate: ', this.uid);
-  this.pc.addIceCandidate(candidate);
-}
-
-RTCPeerConnectionWrapper.prototype.close = function() {
-  console.log('close: ', this.uid);
-  this.pc.close();
-}
-
-////////////////
-
-function doAnswer(uid) {
-  if (pc[uid] == null) {
-    creatPeerConnection();
-  }
-  pc[uid].createAnswer().then(createAnswerAndSendMessage, handleCreateOfferError);
-}
-
-function make_call() {
-  let msg = {
-    type: 'start_video',
-    uid: stu_no
-  };
-  ws.send(JSON.stringify(msg));
-  console.log('open: ', stu_no);
-}
-
-ws.onmessage = function(msg) {
-  msg = JSON.parse(msg.data);
-  console.log('onmessage: ', msg.type, msg);
-
-  if (!msg.uid || msg.uid.slice(-7) !== stu_no)
-    return;
-
-  if (msg.type === 'offer') {
-    handleRemoteOffer(msg);
-  }
-  else if (msg.type === 'candidate') {
-    handleRemoteCandidate(msg);
-  }
-  else if (msg.type === 'answer') {
-    handleRemoteAnswer(msg); 
-  }
-  else if (msg.type === 'newUser') {
-    addNewUser(msg.uid);
-  }
-  else if (msg.type === 'close') {
-    handleRemoteClose(msg);
-  }
-  else if (msg.type === 'client_ready' && msg.uid.slice(-7) === stu_no) {
-    make_call();
-  }
-}
-
-// 建立连接
-ws.onopen = function() {
-  make_call();
-}
-
-// 页面关闭
-window.onbeforeunload = function() {
-  let msg = {
-    type: 'close',
-    uid: stu_no,
-    target: stu_no
-  };
-  ws.send(JSON.stringify(msg));
 }

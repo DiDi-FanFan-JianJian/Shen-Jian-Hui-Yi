@@ -23,8 +23,7 @@ router.get('/login', (req, res) => {
 router.get('/index', (req, res) => {
   console.log("index");
   console.log(req.session);
-  req.session.isLogin = 1;
-  req.session.role = 'student';
+
   if (req.session.isLogin == 1) {
     if (req.session.firstLogin == 1) {
       res.redirect('/password');
@@ -65,8 +64,10 @@ router.get('/password', (req, res) => {
 });
 
 router.get('/invigilation', (req, res) => {
-  req.session.role = 'teacher';
-  if (req.session.role == 'teacher') {
+  console.log("invigilation");
+  console.log(req.session);
+
+  if (req.session.role == 'teacher' && req.session.isLogin == 1 && req.session.firstLogin != 1) {
     res.setHeader('Content-Type', 'text/html;charset=gbk');
     res.sendFile(path.join(__dirname, views, 'server.html'));  
   }
@@ -75,9 +76,9 @@ router.get('/invigilation', (req, res) => {
   }
 });
 
-router.get('/teacher', (req, res) => {
-  res.setHeader('Content-Type', 'text/html;charset=gbk');
-  res.sendFile(path.join(__dirname, views, 'teacher.html'));
-});
+// router.get('/teacher', (req, res) => {
+//   res.setHeader('Content-Type', 'text/html;charset=gbk');
+//   res.sendFile(path.join(__dirname, views, 'teacher.html'));
+// });
 
 module.exports = router;
